@@ -1,1 +1,2 @@
-[[Locations]]
+* [[Game concepts]]
+* [[Locations]]
