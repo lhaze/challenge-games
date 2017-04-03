@@ -9,7 +9,7 @@ class ResourceException extends CoreException {}
 class ResourceStack {
     constructor(resources) {
         // throw new ResourceException();
-        if (!_.isEqual(resources.keys(), ResourceStack.getResourceLiterals())) {}
+        if (!_.isEqual(Object.keys(resources), ResourceStack.getResourceLiterals())) {}
         for (let key in resources) {
             this[key] = resources[key];
         }
