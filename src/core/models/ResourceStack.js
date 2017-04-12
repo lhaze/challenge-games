@@ -1,76 +1,63 @@
 import { default as _ } from 'lodash';
 
-import CoreException from '../exceptions';
 
+function resourceStackFactory(resourceNames) {
 
-class ResourceException extends CoreException {}
+    class ResourceStack {
 
-
-class ResourceStack {
-    constructor(resources) {
-        throw new ResourceException();
-        if (!_.isEqual(
-            _.keys(resources),
-            ResourceStack.getResourceLiterals()
-        )) {
-            throw new ResourceException();
-        }
-        for (const resource in resources) {
-            this[resource] = resources[resource];
-        }
-    }
-
-    static getResourceLiterals() {
-        return new Set();
-    }
-
-    isContaining(other_stack) {
-        return _.isEqual(_.keys(this), _.keys(other_stack));
-    }
-
-    equals(other_stack) {
-        for (const resource in other_stack) {
-            if (!this.hasOwnProperty(resource) ||
-                this[resource] !== other_stack[resource]
-            ) {
-                return false;
+        constructor(resources) {
+            console.assert(!!resourceNames, 'Any resource literals have to be defined');
+            // eslint-disable-next-line no-param-reassign
+            resources = resources || {};
+            this.resourceNames = resourceNames;
+            for (const name of this.resourceNames) {
+                const count = resources[name] || 0;
+                console.assert(_.isNumber(count), 'ResourceStack values should be numbers');
+                this[name] = count;
             }
         }
-        return true;
-    }
 
-    add(added_stack) {
-        for (const resource in added_stack) {
-            this[resource] = (this[resource] || 0) + added_stack[resource];
-        }
-    }
-
-    remove(removed_stack) {
-        if (!this.isContaining(removed_stack)) {
-            throw new ResourceException();
-        }
-        for (const resource in removed_stack) {
-            this[resource] -= removed_stack[resource];
-        }
-    }
-
-    findResourcesDiff(needed_stack) {
-        return _.mapKeys(needed_stack, function (resource, qu) {
-
-        });
-        const diff = {};
-        for (const resource in needed_stack) {
-            if (!this.hasOwnProperty(resource)) {
-                this[resource] = 0;
+        isPositive() {
+            for (const name of this.resourceNames) {
+                if (this[name] < 0) return false;
             }
-            diff[resource] = needed_stack[resource];
+            return true;
         }
-        return new ResourceStack(diff);
+
+        isContaining(otherStack) {
+            for (const name of this.resourceNames) {
+                const t = this[name], o = otherStack[name];
+                if (t < o || t < 0 || o < 0) return false;
+            }
+            return true;
+        }
+
+        isEqual(otherStack) {
+            for (const name of this.resourceNames) {
+                if (this[name] !== (otherStack[name] || 0)) return false;
+            }
+            return true;
+        }
+
+        // TODO: which style is better: add with loop or subtract with reduce?
+        add(addend) {
+            const sum = {};
+            for (const name of this.resourceNames) {
+                sum[name] = this[name] + (addend[name] || 0);
+            }
+            return new ResourceStack(sum);
+        }
+
+        subtract(subtrahend) {
+            const difference = _.reduce(this.resourceNames, (obj, name) => {
+                obj[name] = this[name] - (subtrahend[name] || 0);
+                return obj;
+            }, {});
+            return new ResourceStack(difference);
+        }
     }
+
+    return ResourceStack;
 }
 
-export default ResourceStack;
-export {
-    ResourceStack,
-    ResourceException
-};
+export default resourceStackFactory;
