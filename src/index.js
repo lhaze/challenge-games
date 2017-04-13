@@ -1,9 +1,10 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import App from './App';
+import ReactShowcase from './react_showcase/ReactShowcase';
 import './index.css';
 
+
 ReactDOM.render(
-  <App />,
+  <ReactShowcase />,
   document.getElementById('root')
 );
