@@ -4,7 +4,8 @@ import ReactShowcase from './react_showcase/ReactShowcase';
 import './index.css';
 
 
-ReactDOM.render(
-  <ReactShowcase />,
-  document.getElementById('root')
-);
+const root = document.getElementById('root');
+
+if (!!root) {
+    ReactDOM.render(<ReactShowcase />, root);
+}
