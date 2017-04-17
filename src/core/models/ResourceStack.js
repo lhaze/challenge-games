@@ -1,8 +1,7 @@
-import { default as _ } from 'lodash';
+import _ from 'lodash';
 
 
 function resourceStackFactory(resourceNames) {
-
     class ResourceStack {
 
         constructor(resources) {
@@ -26,8 +25,9 @@ function resourceStackFactory(resourceNames) {
 
         isContaining(otherStack) {
             for (const name of this.resourceNames) {
-                const t = this[name], o = otherStack[name];
-                if (t < o || t < 0 || o < 0) return false;
+                const thisOne = this[name];
+                const thatOne = otherStack[name];
+                if (thisOne < thatOne || thisOne < 0 || thatOne < 0) return false;
             }
             return true;
         }
