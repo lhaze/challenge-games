@@ -1,14 +1,20 @@
+import _ from 'lodash';
 import SlotState from '../SlotState';
+
+
+const state = new SlotState(['matching']);
+const value = { types: ['matching'] };
+const newState = state.setValue(value);
 
 
 describe('SlotState constructor', () => {
     test('with one type', () => {
-        expect(new SlotState('type').types).toEqual(['type']);
+        expect(new SlotState('typeA').types).toEqual(['typeA']);
     });
     test('with multiple types', () => {
         expect(
-            new SlotState(['matching', 'nonMatching']).types
-        ).toEqual(['matching', 'nonMatching']);
+            new SlotState(['typeA', 'typeB']).types
+        ).toEqual(['typeA', 'typeB']);
     });
     test('without types', () => {
         // eslint-disable-next-line no-new
@@ -17,8 +23,6 @@ describe('SlotState constructor', () => {
 });
 
 describe('SlotState.isMatching', () => {
-    const state = new SlotState(['matching']);
-
     test('with one type', () => {
         expect(state.isMatching(['matching'])).toBeTruthy();
     });
@@ -34,18 +38,17 @@ describe('SlotState.isMatching', () => {
 });
 
 describe('SlotState.setValue', () => {
-    const state = new SlotState(['matching']);
-    const value = { types: ['matching'] };
-    const newState = state.setValue(value);
-
-    test('returns new SlotState instance', () => {
+    test('returns new SlotState instance when instance has been changed', () => {
         expect(newState).not.toBe(state);
+    });
+    test('returns the same instance when instance has not been changed', () => {
+        expect(newState.setValue(value)).toBe(newState);
     });
     test('returns state given value', () => {
         expect(newState.value).toBe(value);
     });
     test('returns state with the same options', () => {
-        expect(newState).toMatchObject({ types: state.types, isMatching: state.isMatching });
+        expect(newState).toMatchObject({ types: state.types, options: state.options });
     });
     test('returns state with the same custom isMatching callback', () => {
         const isMatching = () => { return true; };
@@ -58,5 +61,29 @@ describe('SlotState.setValue', () => {
     });
     test('throws on value with non-matching types', () => {
         expect(() => {state.setValue({ types: ['nonMatching'] });}).toThrow();
+    });
+});
+
+describe('SlotState.isEmpty', () => {
+    test('false with empty value', () => {
+        expect(state.isEmpty()).toBeTruthy();
+    });
+    test('false with value set', () => {
+        expect(newState.isEmpty()).toBeFalsy();
+    });
+    test('false after clear', () => {
+        expect(newState.clear().isEmpty()).toBeTruthy();
+    });
+});
+
+describe('SlotState.clear', () => {
+    test('returns new SlotState instance when value was cleared', () => {
+        expect(newState.clear()).not.toBe(newState);
+    });
+    test('returns the same instance when value was not set', () => {
+        expect(state.clear()).toBe(state);
+    });
+    test('returns state with value cleared', () => {
+        expect(state.clear()).toMatchObject({ _value: null });
     });
 });
