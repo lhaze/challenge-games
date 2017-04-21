@@ -1,25 +1,20 @@
 import _ from 'lodash';
 
-function isMatchingType(types) {
-    console.assert(!!types, 'No types to check for matching');
-    return !_.isEmpty(_.intersection(this.types, types));
-}
 
 function isFullExistence() {
     return !this.isEmpty();
 }
 
+const safeHash = (value) => _.isNil(value) ? null : value.hash();
+
 
 class SlotState {
     /** Immutable state of the slot */
 
-    constructor(types, options = {}) {
-        console.assert(!!types, 'No type given to a SlotState instance');
-        this.types = _.isArray(types) ? types : [types];
+    constructor(options = {}) {
         this.options = options;
         this._value = options.value || null;
-        this.isMatching = options.isMatching || isMatchingType.bind(this);
-        this._active = options.active || true;
+        this._active = _.isUndefined(options.active) ? true : options.active;
         this.isFull = options.isFull || isFullExistence.bind(this);
     }
 
@@ -28,21 +23,21 @@ class SlotState {
     }
 
     setValue(value) {
-        console.assert(value.types, 'Given value does not declare its types');
-        console.assert(this.isMatching(value.types),
-            'Value type(s) are not matching to the slot'
-        );
         return this._value === value ? this :
-            new SlotState(this.types, _.assign(_.clone(this.options), { value: value }));
+            new SlotState(_.assign(_.clone(this.options), { value: value }));
     }
 
     clear() {
         return this.isEmpty() ? this :
-            new SlotState(this.types, _.assign(_.clone(this.options), { value: null }));
+            new SlotState(_.assign(_.clone(this.options), { value: null }));
     }
 
     isEmpty() {
         return this._value === null;
+    }
+
+    hasChangedValue(otherState) {
+        return safeHash(this._value) !== safeHash(otherState._value);
     }
 
     get active() {
@@ -51,12 +46,12 @@ class SlotState {
 
     activate() {
         return this.active ? this :
-            new SlotState(this.types, _.assign(_.clone(this.options), { active: true }));
+            new SlotState(_.assign(_.clone(this.options), { active: true }));
     }
 
     deactivate() {
         return !this.active ? this :
-            new SlotState(this.types, _.assign(_.clone(this.options), { active: false }));
+            new SlotState(_.assign(_.clone(this.options), { active: false }));
     }
 }
 

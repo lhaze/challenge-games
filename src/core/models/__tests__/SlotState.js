@@ -2,88 +2,133 @@ import _ from 'lodash';
 import SlotState from '../SlotState';
 
 
-const state = new SlotState(['matching']);
-const value = { types: ['matching'] };
-const newState = state.setValue(value);
+const emptyState = new SlotState();
+const value = { hash: () => 'hash of value' };
+const otherValue = { hash: () => 'hash of otherValue' };
+const someState = emptyState.setValue(value);
+const customIsFull = () => true;
+const options = { value: value, active: false, isFull: customIsFull };
 
 
 describe('SlotState constructor', () => {
-    test('with one type', () => {
-        expect(new SlotState('typeA').types).toEqual(['typeA']);
+    test('without options', () => {
+        expect(new SlotState())
+            .toMatchObject({ _value: null, _active: true, options: {} });
     });
-    test('with multiple types', () => {
-        expect(
-            new SlotState(['typeA', 'typeB']).types
-        ).toEqual(['typeA', 'typeB']);
-    });
-    test('without types', () => {
-        // eslint-disable-next-line no-new
-        expect(() => {new SlotState();}).toThrow();
-    });
-});
-
-describe('SlotState.isMatching', () => {
-    test('with one type', () => {
-        expect(state.isMatching(['matching'])).toBeTruthy();
-    });
-    test('with multiple types', () => {
-        expect(state.isMatching(['matching', 'otherNonMatching'])).toBeTruthy();
-    });
-    test('with non-matching type', () => {
-        expect(state.isMatching(['otherNonMatching'])).toBeFalsy();
-    });
-    test('with non-matching types', () => {
-        expect(state.isMatching(['otherNonMatching', 'anotherNonMatching'])).toBeFalsy();
+    test('with options', () => {
+        const options = { value: value, active: false, isFull: customIsFull };
+        expect(new SlotState(options)).toMatchObject(
+            { _value: value, _active: false, options: options }
+        );
     });
 });
 
 describe('SlotState.setValue', () => {
     test('returns new SlotState instance when instance has been changed', () => {
-        expect(newState).not.toBe(state);
+        expect(someState).not.toBe(emptyState);
     });
     test('returns the same instance when instance has not been changed', () => {
-        expect(newState.setValue(value)).toBe(newState);
+        expect(someState.setValue(value)).toBe(someState);
     });
     test('returns state given value', () => {
-        expect(newState.value).toBe(value);
+        expect(someState.value).toBe(value);
     });
     test('returns state with the same options', () => {
-        expect(newState).toMatchObject({ types: state.types, options: state.options });
-    });
-    test('returns state with the same custom isMatching callback', () => {
-        const isMatching = () => { return true; };
-        const state = new SlotState(['matching'], { isMatching: isMatching });
-        const newState = state.setValue(value);
-        expect(newState.isMatching).toBe(isMatching);
-    });
-    test('throws on value without types', () => {
-        expect(() => {state.setValue({});}).toThrow();
-    });
-    test('throws on value with non-matching types', () => {
-        expect(() => {state.setValue({ types: ['nonMatching'] });}).toThrow();
-    });
-});
-
-describe('SlotState.isEmpty', () => {
-    test('false with empty value', () => {
-        expect(state.isEmpty()).toBeTruthy();
-    });
-    test('false with value set', () => {
-        expect(newState.isEmpty()).toBeFalsy();
-    });
-    test('false after clear', () => {
-        expect(newState.clear().isEmpty()).toBeTruthy();
+        const state = new SlotState(options);
+        const newState = state.setValue(otherValue);
+        expect(newState.options).toMatchObject(_.omit(options, ['value']));
+        expect(newState.options.value).toBe(otherValue);
     });
 });
 
 describe('SlotState.clear', () => {
     test('returns new SlotState instance when value was cleared', () => {
-        expect(newState.clear()).not.toBe(newState);
+        expect(someState.clear()).not.toBe(someState);
     });
     test('returns the same instance when value was not set', () => {
-        expect(state.clear()).toBe(state);
+        expect(emptyState.clear()).toBe(emptyState);
     });
     test('returns state with value cleared', () => {
-        expect(state.clear()).toMatchObject({ _value: null });
+        expect(someState.clear()).toMatchObject({ _value: null });
+    });
+});
+
+describe('SlotState.isEmpty', () => {
+    test('false with empty value', () => {
+        expect(emptyState.isEmpty()).toBeTruthy();
+    });
+    test('false with value set', () => {
+        expect(someState.isEmpty()).toBeFalsy();
+    });
+    test('false after clear', () => {
+        expect(someState.clear().isEmpty()).toBeTruthy();
+    });
+});
+
+describe('SlotState.hasChangedValue', () => {
+    test('true if value changed from null to some', () => {
+        const newState = emptyState.setValue(otherValue);
+        expect(newState.hasChangedValue(emptyState)).toBeTruthy();
+    });
+    test('false if value changed from null to falsy', () => {
+        const newState = emptyState.setValue(0);
+        expect(newState.hasChangedValue(emptyState)).toBeFalsy();
+    });
+    test('false if slot was deactivated', () => {
+        const newState = someState.deactivate();
+        expect(newState.hasChangedValue(someState)).toBeFalsy();
+    });
+    test('true if value changed from some to other', () => {
+        const newState = someState.setValue(otherValue);
+        expect(newState.hasChangedValue(someState)).toBeTruthy();
+    });
+    test('false if value changed from some to the same', () => {
+        const newState = emptyState.setValue(null);
+        expect(newState.hasChangedValue(emptyState)).toBeFalsy();
+    });
+    test('false if slot was activated', () => {
+        const state = new SlotState({ value: value, active: false });
+        const newState = state.activate();
+        expect(newState.hasChangedValue(state)).toBeFalsy();
+    });
+});
+
+
+const inactiveState = new SlotState({ active: false });
+const activeState = new SlotState({ active: true });
+
+describe('SlotState.activate', () => {
+    test('returns new SlotState instance when instance has been changed', () => {
+        const newState = inactiveState.activate();
+        expect(newState).not.toBe(inactiveState);
+        expect(newState.active).toBeTruthy();
+    });
+    test('returns the same instance when instance has not been changed', () => {
+        const newState = activeState.activate();
+        expect(newState).toBe(activeState);
+        expect(newState.active).toBeTruthy();
+    });
+    test('returns state with the same options', () => {
+        const state = new SlotState(options);
+        const newState = state.activate();
+        expect(newState.options).toMatchObject(_.omit(options, ['active']));
+    });
+});
+
+describe('SlotState.deactivate', () => {
+    test('returns new SlotState instance when instance has been changed', () => {
+        const newState = activeState.deactivate();
+        expect(newState).not.toBe(activeState);
+        expect(newState.active).toBeFalsy();
+    });
+    test('returns the same instance when instance has not been changed', () => {
+        const newState = inactiveState.deactivate();
+        expect(newState).toBe(inactiveState);
+        expect(newState.active).toBeFalsy();
+    });
+    test('returns state with the same options', () => {
+        const state = new SlotState(options);
+        const newState = state.deactivate();
+        expect(newState.options).toMatchObject(_.omit(options, ['active']));
     });
 });
