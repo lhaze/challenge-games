@@ -79,3 +79,9 @@ describe('ResourceStack.isEqual', () => {
         expect(stackCyan.isEqual({ blue: 1, green: 2 })).toBeTruthy();
     });
 });
+
+describe('ResourceStack.hash', () => {
+    test('returns the hash value', () => {
+        expect(stackYellow.hash()).toEqual('0cb07a6db25859a27cacf35707d6a428');
+    });
+});

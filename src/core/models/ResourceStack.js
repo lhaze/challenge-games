@@ -1,8 +1,10 @@
 import _ from 'lodash';
+import { hash } from '../utils/hashable';
 
 
-function resourceStackFactory(resourceNames) {
+function createResourceStack(resourceNames) {
     class ResourceStack {
+        /** Immutable stack of resources */
 
         constructor(resources) {
             console.assert(!!resourceNames, 'Any resource literals have to be defined');
@@ -55,9 +57,19 @@ function resourceStackFactory(resourceNames) {
             }, {});
             return new ResourceStack(difference);
         }
+
+        hash() {
+            if (!this._hash) {
+                this._hash = hash(_.reduce(this.resourceNames, (obj, name) => {
+                    obj[name] = this[name];
+                    return obj;
+                }, {}));
+            }
+            return this._hash;
+        }
     }
 
     return ResourceStack;
 }
 
-export default resourceStackFactory;
+export default createResourceStack;

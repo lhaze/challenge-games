@@ -1,11 +1,10 @@
 import _ from 'lodash';
+import { getHash, hash } from '../utils/hashable';
 
 
 function isFullExistence() {
     return !this.isEmpty();
 }
-
-const safeHash = (value) => _.isNil(value) ? null : value.hash();
 
 
 class SlotState {
@@ -37,7 +36,7 @@ class SlotState {
     }
 
     hasChangedValue(otherState) {
-        return safeHash(this._value) !== safeHash(otherState._value);
+        return getHash(this._value) !== getHash(otherState._value);
     }
 
     get active() {
@@ -52,6 +51,13 @@ class SlotState {
     deactivate() {
         return !this.active ? this :
             new SlotState(_.assign(_.clone(this.options), { active: false }));
+    }
+
+    hash() {
+        if (!this._hash) {
+            this._hash = hash(this.options);
+        }
+        return this._hash;
     }
 }
 

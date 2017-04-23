@@ -132,3 +132,9 @@ describe('SlotState.deactivate', () => {
         expect(newState.options).toMatchObject(_.omit(options, ['active']));
     });
 });
+
+describe('SlotState.hash', () => {
+    test('returns the hash value', () => {
+        expect(someState.hash()).toEqual('2044ee4b619f9995c21770cbc5841012');
+    });
+});
