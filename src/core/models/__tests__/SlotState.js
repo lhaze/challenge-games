@@ -65,6 +65,19 @@ describe('SlotState.isEmpty', () => {
     });
 });
 
+describe('SlotState.isEqual', () => {
+    test('on equal state', () => {
+        const otherState = new SlotState(someState.options);
+        expect(someState.isEqual(otherState)).toBeTruthy();
+    });
+    test('on different state', () => {
+        expect(someState.isEqual(emptyState)).toBeFalsy();
+    });
+    test('on nil', () => {
+        expect(someState.isEqual(null)).toBeFalsy();
+    });
+});
+
 describe('SlotState.hasChangedValue', () => {
     test('true if value changed from null to some', () => {
         const newState = emptyState.setValue(otherValue);
@@ -134,7 +147,12 @@ describe('SlotState.deactivate', () => {
 });
 
 describe('SlotState.hash', () => {
-    test('returns the hash value', () => {
-        expect(someState.hash()).toEqual('2044ee4b619f9995c21770cbc5841012');
+    test('equals for equal stack', () => {
+        expect(someState.hash()).toEqual(
+            new SlotState({ value: value }).hash()
+        );
+    });
+    test('differs for other stack', () => {
+        expect(someState.hash()).not.toEqual(emptyState.hash());
     });
 });

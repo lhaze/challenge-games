@@ -35,6 +35,7 @@ function createResourceStack(resourceNames) {
         }
 
         isEqual(otherStack) {
+            if (!_.isObjectLike(otherStack)) return false;
             for (const name of this.resourceNames) {
                 if (this[name] !== (otherStack[name] || 0)) return false;
             }
@@ -60,10 +61,7 @@ function createResourceStack(resourceNames) {
 
         hash() {
             if (!this._hash) {
-                this._hash = hash(_.reduce(this.resourceNames, (obj, name) => {
-                    obj[name] = this[name];
-                    return obj;
-                }, {}));
+                this._hash = hash(_.pick(this, this.resourceNames));
             }
             return this._hash;
         }

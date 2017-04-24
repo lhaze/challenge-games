@@ -39,6 +39,11 @@ class SlotState {
         return getHash(this._value) !== getHash(otherState._value);
     }
 
+    isEqual(otherState) {
+        if (!_.isObjectLike(otherState)) return false;
+        return _.isEqual(this.options, otherState.options);
+    }
+
     get active() {
         return this._active;
     }

@@ -71,17 +71,31 @@ describe('ResourceStack.isContaining', () => {
 });
 
 describe('ResourceStack.isEqual', () => {
-    test('on ResourceStack', () => {
+    test('on an equal ResourceStack', () => {
         const otherStackCyan = new TestStack({ blue: 1, green: 2 });
         expect(stackCyan.isEqual(otherStackCyan)).toBeTruthy();
     });
-    test('on object', () => {
+    test('on a different ResourceStack', () => {
+        expect(stackCyan.isEqual(stackYellow)).toBeFalsy();
+    });
+    test('on an equal object', () => {
         expect(stackCyan.isEqual({ blue: 1, green: 2 })).toBeTruthy();
+    });
+    test('on a different object', () => {
+        expect(stackCyan.isEqual({ blue: 3, green: 2 })).toBeFalsy();
+    });
+    test('on nil', () => {
+        expect(stackCyan.isEqual(null)).toBeFalsy();
     });
 });
 
 describe('ResourceStack.hash', () => {
-    test('returns the hash value', () => {
-        expect(stackYellow.hash()).toEqual('0cb07a6db25859a27cacf35707d6a428');
+    test('equals for equal state', () => {
+        expect(stackYellow.hash()).toEqual(
+            new TestStack({ red: 1, green: 1, white: 3 }).hash()
+        );
+    });
+    test('differs for other stack', () => {
+        expect(stackYellow.hash()).not.toEqual(stackCyan.hash());
     });
 });
