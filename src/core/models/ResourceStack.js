@@ -4,7 +4,7 @@ import { hash } from '../utils/hashable';
 
 function createResourceStack(resourceNames) {
     class ResourceStack {
-        /** Immutable stack of resources */
+        /** Immutable ValueObject representing stack of resources */
 
         constructor(resources) {
             console.assert(!!resourceNames, 'Any resource literals have to be defined');

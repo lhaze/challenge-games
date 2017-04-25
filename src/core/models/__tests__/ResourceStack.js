@@ -1,7 +1,7 @@
-import resourceStackFactory from '../ResourceStack';
+import createStackFactory from '../ResourceStack';
 
 
-const TestStack = resourceStackFactory(['red', 'green', 'blue']);
+const TestStack = createStackFactory(['red', 'green', 'blue']);
 const stackCyan = new TestStack({ blue: 1, green: 2 });
 const stackYellow = new TestStack({ red: 1, green: 1, white: 3 });
 

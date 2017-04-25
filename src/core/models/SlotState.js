@@ -8,7 +8,7 @@ function isFullExistence() {
 
 
 class SlotState {
-    /** Immutable state of the slot */
+    /** Immutable State object for a slot */
 
     constructor(options = {}) {
         this.options = options;
