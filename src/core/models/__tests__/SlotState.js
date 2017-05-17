@@ -1,5 +1,7 @@
 import _ from 'lodash';
-import SlotState, { deserialize, serialize } from '../SlotState';
+
+import serialization from '../../utils/serialization';
+import SlotState from '../SlotState';
 
 
 const emptyState = new SlotState();
@@ -167,9 +169,10 @@ describe('SlotState serialization', () => {
     const state = new SlotState(options);
     const serialized = '{"type":"SlotState","args":{"value":"JSON of value","active":false}}';
     test('serialize', () => {
-        expect(serialize(state)).toEqual(serialized);
+        expect(serialization.serialize(state)).toEqual(serialized);
     });
     test('deserialize', () => {
-        expect(deserialize(serialized)).toEqual({});
+        const e = serialization.deserialize(serialized);
+        expect(e).toMatchObject(state);
     });
 });
