@@ -1,10 +1,16 @@
 import _ from 'lodash';
-import SlotState from '../SlotState';
+import SlotState, { deserialize, serialize } from '../SlotState';
 
 
 const emptyState = new SlotState();
-const value = { hash: () => 'hash of value' };
-const otherValue = { hash: () => 'hash of otherValue' };
+const value = {
+    hash: () => 'hash of value',
+    toJSON: () => 'JSON of value'
+};
+const otherValue = {
+    hash: () => 'hash of otherValue',
+    toJSON: () => 'JSON of otherValue'
+};
 const someState = emptyState.setValue(value);
 const customIsFull = () => true;
 const options = { value: value, active: false, isFull: customIsFull };
@@ -154,5 +160,16 @@ describe('SlotState.hash', () => {
     });
     test('differs for other stack', () => {
         expect(someState.hash()).not.toEqual(emptyState.hash());
+    });
+});
+
+describe('SlotState serialization', () => {
+    const state = new SlotState(options);
+    const serialized = '{"type":"SlotState","args":{"value":"JSON of value","active":false}}';
+    test('serialize', () => {
+        expect(serialize(state)).toEqual(serialized);
+    });
+    test('deserialize', () => {
+        expect(deserialize(serialized)).toEqual({});
     });
 });

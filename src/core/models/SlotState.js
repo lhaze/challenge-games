@@ -1,5 +1,6 @@
 import _ from 'lodash';
 import { getHash, hash } from '../utils/hashable';
+import { registerState, serialize } from '../utils/serialization';
 
 
 function isFullExistence() {
@@ -7,7 +8,7 @@ function isFullExistence() {
 }
 
 
-class SlotState {
+export default class SlotState {
     /** Immutable State object for a slot */
 
     constructor(options = {}) {
@@ -50,12 +51,12 @@ class SlotState {
 
     activate() {
         return this.active ? this :
-            new SlotState(_.assign(_.clone(this.options), { active: true }));
+            new SlotState(_.assign({}, this.options, { active: true }));
     }
 
     deactivate() {
         return !this.active ? this :
-            new SlotState(_.assign(_.clone(this.options), { active: false }));
+            new SlotState(_.assign({}, this.options, { active: false }));
     }
 
     hash() {
@@ -64,6 +65,15 @@ class SlotState {
         }
         return this._hash;
     }
+
+    toJSON() {
+        return {
+            type: 'SlotState',
+            args: this.options
+            // TODO update args with methods
+        };
+    }
 }
 
-export default SlotState;
+
+registerState('SlotState', (args) => new SlotState(args), serialize);
