@@ -3,7 +3,7 @@ import _hash from 'object-hash';
 
 
 export function hash(value) {
-    // TODO: options?
+    // TODO: args?
     return _hash.MD5(value);
 }
 

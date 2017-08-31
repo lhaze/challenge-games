@@ -1,8 +1,12 @@
 import _ from 'lodash';
 import { hash } from '../utils/hashable';
+import serialization from '../utils/serialization';
 
 
-function createResourceStack(resourceNames) {
+export default function resourceStackFactory(resourceNames, stackName) {
+    // eslint-disable-next-line no-param-reassign
+    const name = stackName || 'noname';
+
     class ResourceStack {
         /** Immutable ValueObject representing stack of resources */
 
@@ -10,11 +14,12 @@ function createResourceStack(resourceNames) {
             console.assert(!!resourceNames, 'Any resource literals have to be defined');
             // eslint-disable-next-line no-param-reassign
             resources = resources || {};
+            this.name = name;
             this.resourceNames = resourceNames;
-            for (const name of this.resourceNames) {
-                const count = resources[name] || 0;
+            for (const resource of this.resourceNames) {
+                const count = resources[resource] || 0;
                 console.assert(_.isNumber(count), 'ResourceStack values should be numbers');
-                this[name] = count;
+                this[resource] = count;
             }
         }
 
@@ -35,7 +40,9 @@ function createResourceStack(resourceNames) {
         }
 
         isEqual(otherStack) {
-            if (!_.isObjectLike(otherStack)) return false;
+            if (!_.isObjectLike(otherStack) || this.stackName !== otherStack.stackName) {
+                return false;
+            }
             for (const name of this.resourceNames) {
                 if (this[name] !== (otherStack[name] || 0)) return false;
             }
@@ -65,9 +72,18 @@ function createResourceStack(resourceNames) {
             }
             return this._hash;
         }
+
+        toJSON() {
+            return {
+                type: `ResourceStack.${this.name}`,
+                args: _.reduce(this.resourceNames, (obj, name) => {
+                    obj[name] = this[name];
+                    return obj;
+                }, {})
+            };
+        }
     }
 
+    serialization.registerType(`ResourceStack.${name}`, ResourceStack);
     return ResourceStack;
 }
-
-export default createResourceStack;

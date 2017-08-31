@@ -1,3 +1,6 @@
+import _ from 'lodash';
+
+
 class SerializationRegister {
     constructor() {
         this.register = {};
@@ -8,21 +11,49 @@ class SerializationRegister {
     }
 
     deserialize(value) {
-        const obj = JSON.parse(value);
-        const typeName = obj.type;
-        console.assert(typeName in this.register, `SerializationRegister has no type named ${typeName}`);
+        // eslint-disable-next-line no-param-reassign
+        if (_.isString(value)) value = JSON.parse(value);
+        if (!_.has(value, 'type')) return value;
+        const typeName = value.type;
+        console.assert(
+            typeName in this.register,
+            `SerializationRegister has no type named '${typeName}'`
+        );
         const data = this.register[typeName];
-        const deserializator = data.deserializator;
-        return deserializator(obj.args);
+        const type = data.type;
+        const args = _.mapValues(
+            value.args,
+            (v, k) => k in data.factoryRegister ?
+                data.factoryRegister[k](v) :
+                v
+        );
+        return new type(args);
     }
 
-    registerState(name, deserializator, serializator) {
-        console.assert(!(name in this.register));
-        this.register[name] = {
-            serializator: serializator || this.serialize,
-            deserializator: deserializator
+    registerType(typeName, type, factoryRegister) {
+        console.assert(
+            typeName,
+            'SerializationRegister.registerType called with no typeName provided'
+        );
+        console.assert(
+            !(typeName in this.register),
+            `SerializationRegister already has type named '${typeName}'`
+        );
+        this.register[typeName] = {
+            type: type,
+            factoryRegister: factoryRegister || {}
         };
+    }
+
+    registerFactory(typeName, argName, factory) {
+        const data = this.register[typeName];
+        console.assert(
+            typeName in this.register,
+            `SerializationRegister has no type named '${typeName}'`
+        );
+        data.factoryRegister[argName] = factory;
     }
 }
 
 export default new SerializationRegister();
+export { SerializationRegister };

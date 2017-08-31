@@ -1,7 +1,7 @@
-import createStackFactory from '../ResourceStack';
+import resourceStackFactory from '../ResourceStack';
+import serialization from '../../utils/serialization';
 
-
-const TestStack = createStackFactory(['red', 'green', 'blue']);
+const TestStack = resourceStackFactory(['red', 'green', 'blue'], 'TestStack');
 const stackCyan = new TestStack({ blue: 1, green: 2 });
 const stackYellow = new TestStack({ red: 1, green: 1, white: 3 });
 
@@ -79,10 +79,10 @@ describe('ResourceStack.isEqual', () => {
         expect(stackCyan.isEqual(stackYellow)).toBeFalsy();
     });
     test('on an equal object', () => {
-        expect(stackCyan.isEqual({ blue: 1, green: 2 })).toBeTruthy();
+        expect(stackCyan.isEqual({ blue: 1, green: 2, name: 'TestStack' })).toBeTruthy();
     });
     test('on a different object', () => {
-        expect(stackCyan.isEqual({ blue: 3, green: 2 })).toBeFalsy();
+        expect(stackCyan.isEqual({ blue: 3, green: 2, name: 'TestStack' })).toBeFalsy();
     });
     test('on nil', () => {
         expect(stackCyan.isEqual(null)).toBeFalsy();
@@ -97,5 +97,16 @@ describe('ResourceStack.hash', () => {
     });
     test('differs for other stack', () => {
         expect(stackYellow.hash()).not.toEqual(stackCyan.hash());
+    });
+});
+
+describe('ResourceStack serialization', () => {
+    const serialized = '{"type":"ResourceStack.TestStack","args":{"red":1,"green":1,"blue":0}}';
+    test('serialize', () => {
+        expect(serialization.serialize(stackYellow)).toEqual(serialized);
+    });
+    test('deserialize', () => {
+        const deserialized = serialization.deserialize(serialized);
+        expect(stackYellow.isEqual(deserialized)).toBeTruthy();
     });
 });
