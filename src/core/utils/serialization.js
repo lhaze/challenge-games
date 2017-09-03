@@ -11,8 +11,10 @@ class SerializationRegister {
     }
 
     deserialize(value) {
-        // eslint-disable-next-line no-param-reassign
-        if (_.isString(value)) value = JSON.parse(value);
+        return this.construct(JSON.parse(value));
+    }
+
+    construct(value) {
         if (!_.has(value, 'type')) return value;
         const typeName = value.type;
         console.assert(

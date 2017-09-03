@@ -1,32 +1,36 @@
 import _ from 'lodash';
 
 import serialization from '../../utils/serialization';
+import resourceStackFactory from '../ResourceStack';
 import SlotState from '../SlotState';
 
 
 const emptyState = new SlotState();
 const value = {
     hash: () => 'hash of value',
-    toJSON: () => 'JSON of value'
+    toJSON: () => '{"name":"value"}'
 };
 const otherValue = {
     hash: () => 'hash of otherValue',
-    toJSON: () => 'JSON of otherValue'
+    toJSON: () => '{"name":"otherValue"}'
 };
-const someState = emptyState.setValue(value);
+
 const customIsFull = () => true;
-const options = { value: value, active: false, isFull: customIsFull };
+serialization.registerFactory('SlotState', 'isFull', 'customIsFull', customIsFull);
+
+const someState = emptyState.setValue(value);
+const args = { value: value, active: false, isFull: customIsFull };
 
 
 describe('SlotState constructor', () => {
-    test('without options', () => {
+    test('without args', () => {
         expect(new SlotState())
-            .toMatchObject({ _value: null, _active: true, options: {} });
+            .toMatchObject({ _value: null, _active: true, args: {} });
     });
-    test('with options', () => {
-        const options = { value: value, active: false, isFull: customIsFull };
-        expect(new SlotState(options)).toMatchObject(
-            { _value: value, _active: false, options: options }
+    test('with args', () => {
+        const args = { value: value, active: false, isFull: customIsFull };
+        expect(new SlotState(args)).toMatchObject(
+            { _value: value, _active: false, args: args }
         );
     });
 });
@@ -41,11 +45,11 @@ describe('SlotState.setValue', () => {
     test('returns state given value', () => {
         expect(someState.value).toBe(value);
     });
-    test('returns state with the same options', () => {
-        const state = new SlotState(options);
+    test('returns state with the same args', () => {
+        const state = new SlotState(args);
         const newState = state.setValue(otherValue);
-        expect(newState.options).toMatchObject(_.omit(options, ['value']));
-        expect(newState.options.value).toBe(otherValue);
+        expect(newState.args).toMatchObject(_.omit(args, ['value']));
+        expect(newState.args.value).toBe(otherValue);
     });
 });
 
@@ -75,7 +79,7 @@ describe('SlotState.isEmpty', () => {
 
 describe('SlotState.isEqual', () => {
     test('on equal state', () => {
-        const otherState = new SlotState(someState.options);
+        const otherState = new SlotState(someState.args);
         expect(someState.isEqual(otherState)).toBeTruthy();
     });
     test('on different state', () => {
@@ -93,7 +97,7 @@ describe('SlotState.hasChangedValue', () => {
     });
     test('false if value changed from null to falsy', () => {
         const newState = emptyState.setValue(0);
-        expect(newState.hasChangedValue(emptyState)).toBeFalsy();
+        expect(newState.hasChangedValue(emptyState)).toBeTruthy();
     });
     test('false if slot was deactivated', () => {
         const newState = someState.deactivate();
@@ -129,10 +133,10 @@ describe('SlotState.activate', () => {
         expect(newState).toBe(activeState);
         expect(newState.active).toBeTruthy();
     });
-    test('returns state with the same options', () => {
-        const state = new SlotState(options);
+    test('returns state with the same args', () => {
+        const state = new SlotState(args);
         const newState = state.activate();
-        expect(newState.options).toMatchObject(_.omit(options, ['active']));
+        expect(newState.args).toMatchObject(_.omit(args, ['active']));
     });
 });
 
@@ -147,10 +151,10 @@ describe('SlotState.deactivate', () => {
         expect(newState).toBe(inactiveState);
         expect(newState.active).toBeFalsy();
     });
-    test('returns state with the same options', () => {
-        const state = new SlotState(options);
+    test('returns state with the same args', () => {
+        const state = new SlotState(args);
         const newState = state.deactivate();
-        expect(newState.options).toMatchObject(_.omit(options, ['active']));
+        expect(newState.args).toMatchObject(_.omit(args, ['active']));
     });
 });
 
@@ -166,13 +170,72 @@ describe('SlotState.hash', () => {
 });
 
 describe('SlotState serialization', () => {
-    const state = new SlotState(options);
-    const serialized = '{"type":"SlotState","args":{"value":"JSON of value","active":false}}';
-    test('serialize', () => {
-        expect(serialization.serialize(state)).toEqual(serialized);
+    const serializedEmpty = '{"type":"SlotState","args":{}}';
+    const valueStr = 'value';
+    const serializedStr = '{"type":"SlotState","args":{"value":"value"}}';
+    const valueObj = { name: 'value' };
+    const serializedObj = '{"type":"SlotState","args":{"value":{"name":"value"}}}';
+    const valueEmptyObj = {};
+    const serializedEmptyObj = '{"type":"SlotState","args":{"value":{}}}';
+    const valueStack = new (resourceStackFactory(['tokens'], 'TokenStack'))({ tokens: 7 });
+    const serializedStack = (
+        `{"type":"SlotState","args":{"value":${serialization.serialize(valueStack)}}}`
+    );
+
+    test('serialize empty state', () => {
+        expect(serialization.serialize(emptyState)).toEqual(serializedEmpty);
     });
-    test('deserialize', () => {
-        const e = serialization.deserialize(serialized);
-        expect(e).toMatchObject(state);
+    test('deserialize empty state', () => {
+        const result = serialization.deserialize(serializedEmpty);
+        const expected = _.pick(emptyState, ['args', '_active', '_value']);
+        expect(result).toMatchObject(expected);
+    });
+    test('serialize str value', () => {
+        const state = emptyState.setValue(valueStr);
+        expect(serialization.serialize(state)).toEqual(serializedStr);
+    });
+    test('deserialize str value', () => {
+        const result = serialization.deserialize(serializedStr);
+        expect(result).toMatchObject({
+            args: { value: valueStr },
+            _active: true,
+            _value: valueStr
+        });
+    });
+    test('serialize obj value', () => {
+        const state = emptyState.setValue(valueObj);
+        expect(serialization.serialize(state)).toEqual(serializedObj);
+    });
+    test('deserialize obj value', () => {
+        const result = serialization.deserialize(serializedObj);
+        expect(result).toMatchObject({
+            args: { value: valueObj },
+            _active: true,
+            _value: valueObj
+        });
+    });
+    test('serialize empty obj value', () => {
+        const state = emptyState.setValue(valueEmptyObj);
+        expect(serialization.serialize(state)).toEqual(serializedEmptyObj);
+    });
+    test('deserialize empty obj value', () => {
+        const result = serialization.deserialize(serializedEmptyObj);
+        expect(result).toMatchObject({
+            args: { value: valueEmptyObj },
+            _active: true,
+            _value: valueEmptyObj
+        });
+    });
+    test('serialize stack value', () => {
+        const state = emptyState.setValue(valueStack);
+        expect(serialization.serialize(state)).toEqual(serializedStack);
+    });
+    test('deserialize stack value', () => {
+        const result = serialization.deserialize(serializedStack);
+        expect(result).toMatchObject({
+            args: { value: valueStack },
+            _active: true,
+            _value: valueStack
+        });
     });
 });

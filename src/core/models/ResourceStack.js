@@ -40,7 +40,7 @@ export default function resourceStackFactory(resourceNames, stackName) {
         }
 
         isEqual(otherStack) {
-            if (!_.isObjectLike(otherStack) || this.stackName !== otherStack.stackName) {
+            if (!_.isObjectLike(otherStack) || this.name !== otherStack.name) {
                 return false;
             }
             for (const name of this.resourceNames) {

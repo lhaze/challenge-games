@@ -1,6 +1,6 @@
 import _ from 'lodash';
 import { getHash, hash } from '../utils/hashable';
-import { registerState, serialize } from '../utils/serialization';
+import serialization from '../utils/serialization';
 
 
 function isFullExistence() {
@@ -11,11 +11,11 @@ function isFullExistence() {
 export default class SlotState {
     /** Immutable State object for a slot */
 
-    constructor(options = {}) {
-        this.options = options;
-        this._value = options.value || null;
-        this._active = _.isUndefined(options.active) ? true : options.active;
-        this.isFull = options.isFull || isFullExistence.bind(this);
+    constructor(args = {}) {
+        this.args = args;
+        this._value = _.isUndefined(args.value) ? null : args.value;
+        this._active = _.isUndefined(args.active) ? true : args.active;
+        this.isFull = (args.isFull || isFullExistence).bind(this);
     }
 
     get value() {
@@ -24,12 +24,12 @@ export default class SlotState {
 
     setValue(value) {
         return this._value === value ? this :
-            new SlotState(_.assign(_.clone(this.options), { value: value }));
+            new SlotState(_.assign(_.clone(this.args), { value: value }));
     }
 
     clear() {
         return this.isEmpty() ? this :
-            new SlotState(_.assign(_.clone(this.options), { value: null }));
+            new SlotState(_.assign(_.clone(this.args), { value: null }));
     }
 
     isEmpty() {
@@ -42,7 +42,7 @@ export default class SlotState {
 
     isEqual(otherState) {
         if (!_.isObjectLike(otherState)) return false;
-        return _.isEqual(this.options, otherState.options);
+        return _.isEqual(this.args, otherState.args);
     }
 
     get active() {
@@ -51,17 +51,17 @@ export default class SlotState {
 
     activate() {
         return this.active ? this :
-            new SlotState(_.assign({}, this.options, { active: true }));
+            new SlotState(_.assign({}, this.args, { active: true }));
     }
 
     deactivate() {
         return !this.active ? this :
-            new SlotState(_.assign({}, this.options, { active: false }));
+            new SlotState(_.assign({}, this.args, { active: false }));
     }
 
     hash() {
         if (!this._hash) {
-            this._hash = hash(this.options);
+            this._hash = hash(this.args);
         }
         return this._hash;
     }
@@ -69,11 +69,14 @@ export default class SlotState {
     toJSON() {
         return {
             type: 'SlotState',
-            args: this.options
-            // TODO update args with methods
+            args: this.args
         };
     }
 }
 
-
-registerState('SlotState', (args) => new SlotState(args), serialize);
+serialization.registerType('SlotState', SlotState, {
+    isFull: (value) => ({
+        isFullExistence
+    }[value]),
+    value: serialization.construct.bind(serialization)
+});

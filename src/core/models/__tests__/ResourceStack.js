@@ -75,8 +75,11 @@ describe('ResourceStack.isEqual', () => {
         const otherStackCyan = new TestStack({ blue: 1, green: 2 });
         expect(stackCyan.isEqual(otherStackCyan)).toBeTruthy();
     });
-    test('on a different ResourceStack', () => {
+    test('on a different TestStack', () => {
         expect(stackCyan.isEqual(stackYellow)).toBeFalsy();
+    });
+    test('on a different ResourceStack', () => {
+        expect(stackCyan.isEqual({ blue: 1, green: 2, name: 'FooStack' })).toBeFalsy();
     });
     test('on an equal object', () => {
         expect(stackCyan.isEqual({ blue: 1, green: 2, name: 'TestStack' })).toBeTruthy();

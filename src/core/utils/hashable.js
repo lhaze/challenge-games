@@ -9,5 +9,7 @@ export function hash(value) {
 
 
 export function getHash(value) {
-    return _.isNil(value) ? null : value.hash();
+    if (_.isNil(value)) return null;
+    if (_.has(value, 'hash')) return value.hash();
+    return hash(value);
 }
