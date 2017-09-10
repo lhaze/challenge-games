@@ -1,115 +1,165 @@
-import resourceStackFactory from '../ResourceStack';
+import createResourceStack from '../ResourceStack';
+// import * as ResourceStack from '../ResourceStack';
 import serialization from '../../utils/serialization';
 
-const TestStack = resourceStackFactory(['red', 'green', 'blue'], 'TestStack');
-const stackCyan = new TestStack({ blue: 1, green: 2 });
-const stackYellow = new TestStack({ red: 1, green: 1, white: 3 });
+const ctx = {
+    'ResourceStack.tokens': {
+        resourceNames: ['tokens']
+    },
+    'ResourceStack.colors': {
+        resourceNames: ['red', 'green', 'blue']
+    }
+};
+
+const ResourceStack = createResourceStack(ctx);
+
+const tokensState = {
+    type: 'ResourceStack.tokens',
+    tokens: 7
+};
+
+const stateCyan = {
+    type: 'ResourceStack.colors',
+    red: 1,
+    green: 2
+};
+
+const stateYellow = {
+    type: 'ResourceStack.colors',
+    red: 1,
+    green: 1,
+    blue: 3
+};
 
 
-describe('ResourceStack constructor', () => {
-    test('is mapping keys', () => {
-        expect(stackYellow).toMatchObject({ red: 1, green: 1 });
-    });
-    test('when unexpected keys happen', () => {
-        expect(stackYellow).not.toHaveProperty('white');
-    });
-});
+// describe('ResourceStack constructor', () => {
+//     test('is mapping keys', () => {
+//         expect(stateYellow).toMatchObject({ red: 1, green: 1 });
+//     });
+//     test('when unexpected keys happen', () => {
+//         expect(stateYellow).not.toHaveProperty('white');
+//     });
+// });
+//
 
-describe('ResourceStack.add', () => {
-    test('on ResourceStack', () => {
-        expect(stackCyan.add(stackYellow))
-            .toMatchObject({ blue: 1, red: 1, green: 3 });
+describe('ResourceStack.isEmpty', () => {
+    test('on null', () => {
+        expect(ResourceStack.isEmpty(null)).toBeTruthy();
     });
-    test('on object', () => {
-        expect(stackCyan.add({ blue: 10 }))
-            .toMatchObject({ blue: 11, green: 2 });
+    test('on undefined', () => {
+        expect(ResourceStack.isEmpty(undefined)).toBeTruthy();
     });
-});
-
-describe('ResourceStack.subtract', () => {
-    test('on ResourceStack', () => {
-        expect(stackCyan.subtract(stackYellow))
-            .toMatchObject({ blue: 1, green: 1, red: -1 });
+    test('on an empty stack', () => {
+        const state = { type: 'ResourceStack.colors' };
+        expect(ResourceStack.isEmpty(state)).toBeTruthy();
     });
-    test('on object', () => {
-        expect(stackCyan.subtract({ blue: 2, green: 3 }))
-            .toMatchObject({ blue: -1, green: -1, red: 0 });
+    test('on stack with only zero', () => {
+        const state = { green: 0, type: 'ResourceStack.colors' };
+        expect(ResourceStack.isEmpty(state)).toBeTruthy();
+    });
+    test('on negative stack', () => {
+        const state = { red: -1, type: 'ResourceStack.colors' };
+        expect(ResourceStack.isEmpty(state)).toBeFalsy();
+    });
+    test('on positive stack', () => {
+        const state = { red: 1, type: 'ResourceStack.colors' };
+        expect(ResourceStack.isEmpty(state)).toBeFalsy();
+    });
+    test('on stack with zero and anything else', () => {
+        const state = { red: 1, green: 0, type: 'ResourceStack.colors' };
+        expect(ResourceStack.isEmpty(state)).toBeFalsy();
     });
 });
 
 describe('ResourceStack.isPositive', () => {
     test('on an empty stack', () => {
-        expect(new TestStack().isPositive()).toBeTruthy();
+        const state = { type: 'ResourceStack.colors' };
+        expect(ResourceStack.isPositive(state)).toBeTruthy();
     });
     test('on a negative stack', () => {
-        expect(new TestStack({ red: -1 }).isPositive()).toBeFalsy();
+        const state = { type: 'ResourceStack.colors', red: -1 };
+        const result = ResourceStack.isPositive(state);
+        expect(result).toBeFalsy();
     });
     test('on a mixed stack', () => {
-        expect(new TestStack({ red: -1, green: 1 }).isPositive()).toBeFalsy();
+        const state = { type: 'ResourceStack.colors', red: -1, green: 1 };
+        expect(ResourceStack.isPositive(state)).toBeFalsy();
     });
     test('on a positive stack', () => {
-        expect(stackCyan.isPositive()).toBeTruthy();
+        expect(ResourceStack.isPositive(stateCyan)).toBeTruthy();
+    });
+});
+
+describe('ResourceStack.isEqual', () => {
+    test('on self', () => {
+        expect(ResourceStack.isEqual(stateCyan, stateCyan)).toBeTruthy();
+    });
+    test('on a different state of the same type', () => {
+        expect(ResourceStack.isEqual(stateYellow)).toBeFalsy();
+    });
+    test('on an equal object', () => {
+        const other = { red: 1, green: 2, type: 'ResourceStack.colors' };
+        expect(ResourceStack.isEqual(stateCyan, other)).toBeTruthy();
+    });
+    test('on a different type of ResourceStack', () => {
+        expect(() => ResourceStack.isEqual(stateCyan, tokensState)).toThrow();
+    });
+    test('on nil', () => {
+        expect(ResourceStack.isEqual(stateCyan, null)).toBeFalsy();
+    });
+    test('nil on nil', () => {
+        expect(ResourceStack.isEqual(undefined, null)).toBeTruthy();
     });
 });
 
 describe('ResourceStack.isContaining', () => {
     test('on self', () => {
-        expect(stackCyan.isContaining(stackCyan)).toBeTruthy();
+        expect(ResourceStack.isContaining(stateCyan, stateCyan)).toBeTruthy();
     });
-    test('on an empty stack', () => {
-        expect(stackCyan.isContaining(new TestStack())).toBeTruthy();
+    test('on an empty state', () => {
+        const emptyState = { type: 'ResourceStack.colors' };
+        expect(ResourceStack.isContaining(stateCyan, emptyState)).toBeTruthy();
     });
-    test('on a negative stack', () => {
-        expect(stackCyan.isContaining(new TestStack({ blue: -1 }))).toBeFalsy();
+    test('on a negative state', () => {
+        const negativeState = { type: 'ResourceStack.colors', blue: -1 };
+        expect(ResourceStack.isContaining(stateCyan, negativeState)).toBeFalsy();
     });
     test('on a mixed stack', () => {
-        expect(stackCyan.isContaining(new TestStack({ blue: -1, green: 1 }))).toBeFalsy();
+        const mixedState = { type: 'ResourceStack.colors', blue: -1, green: 1 };
+        expect(ResourceStack.isContaining(stateCyan, mixedState)).toBeFalsy();
     });
     test('on a positive stack', () => {
-        expect(stackCyan.isContaining(new TestStack({ blue: 1, green: 1 }))).toBeTruthy();
+        const positiveState = { type: 'ResourceStack.colors', red: 1, green: 1 };
+        expect(ResourceStack.isContaining(stateCyan, positiveState)).toBeTruthy();
     });
 });
 
-describe('ResourceStack.isEqual', () => {
-    test('on an equal ResourceStack', () => {
-        const otherStackCyan = new TestStack({ blue: 1, green: 2 });
-        expect(stackCyan.isEqual(otherStackCyan)).toBeTruthy();
+describe('ResourceStack.add', () => {
+    test('on ResourceStack', () => {
+        expect(ResourceStack.add(stateCyan, stateYellow))
+            .toMatchObject({ red: 2, green: 3, blue: 3 });
     });
-    test('on a different TestStack', () => {
-        expect(stackCyan.isEqual(stackYellow)).toBeFalsy();
-    });
-    test('on a different ResourceStack', () => {
-        expect(stackCyan.isEqual({ blue: 1, green: 2, name: 'FooStack' })).toBeFalsy();
-    });
-    test('on an equal object', () => {
-        expect(stackCyan.isEqual({ blue: 1, green: 2, name: 'TestStack' })).toBeTruthy();
-    });
-    test('on a different object', () => {
-        expect(stackCyan.isEqual({ blue: 3, green: 2, name: 'TestStack' })).toBeFalsy();
+    test('on object', () => {
+        expect(ResourceStack.add(stateCyan, { type: 'ResourceStack.colors', red: 10 }))
+            .toMatchObject({ red: 11, green: 2 });
     });
     test('on nil', () => {
-        expect(stackCyan.isEqual(null)).toBeFalsy();
+        expect(ResourceStack.add(stateCyan, null))
+            .toMatchObject(stateCyan);
+        expect(ResourceStack.add(null, stateCyan))
+            .toMatchObject(stateCyan);
     });
 });
 
-describe('ResourceStack.hash', () => {
-    test('equals for equal state', () => {
-        expect(stackYellow.hash()).toEqual(
-            new TestStack({ red: 1, green: 1, white: 3 }).hash()
-        );
+describe('ResourceStack.subtract', () => {
+    test('on ResourceStack', () => {
+        expect(ResourceStack.subtract(stateCyan, stateYellow))
+            .toMatchObject({ type: 'ResourceStack.colors', blue: -3, green: 1, red: 0 });
     });
-    test('differs for other stack', () => {
-        expect(stackYellow.hash()).not.toEqual(stackCyan.hash());
-    });
-});
-
-describe('ResourceStack serialization', () => {
-    const serialized = '{"type":"ResourceStack.TestStack","args":{"red":1,"green":1,"blue":0}}';
-    test('serialize', () => {
-        expect(serialization.serialize(stackYellow)).toEqual(serialized);
-    });
-    test('deserialize', () => {
-        const deserialized = serialization.deserialize(serialized);
-        expect(stackYellow.isEqual(deserialized)).toBeTruthy();
+    test('on nil', () => {
+        // expect(ResourceStack.subtract(stateCyan, null))
+        //     .toMatchObject(stateCyan);
+        expect(ResourceStack.subtract(null, stateCyan))
+            .toMatchObject({ type: 'ResourceStack.colors', blue: 0, green: -2, red: -1 });
     });
 });
