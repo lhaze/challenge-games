@@ -2,8 +2,10 @@ import _ from 'lodash';
 import { hash as _hash } from '../utils/hashable';
 
 
+const typeSymbol = Symbol.for('type');
+
 export function validateState(ctx, state) {
-    const type = state.type;
+    const type = state[typeSymbol];
     console.assert(type, `State object doesn't define its type: ${JSON.stringify(state)}`);
     const desc = ctx[type];
     console.assert(desc, `Context object doesn't describe the type: ${JSON.stringify(ctx)}`);
@@ -29,7 +31,7 @@ function validateCtx(ctx, type) {
 }
 
 function getTypeDesc(ctx, state) {
-    const type = state.type;
+    const type = state[typeSymbol];
     return [type, ctx[type]];
 }
 
@@ -105,7 +107,7 @@ export function add(ctx, addendL, addendR) {
 export function subtract(ctx, minuend, subtrahend) {
     if (isEmpty(ctx, subtrahend)) return minuend;
     // eslint-disable-next-line no-param-reassign
-    if (_.isNil(minuend)) minuend = { type: subtrahend.type };
+    if (_.isNil(minuend)) minuend = { typeSymbol: subtrahend.type };
     const [typeM, desc] = getTypeDesc(ctx, minuend);
     const [typeS] = getTypeDesc(ctx, subtrahend);
     console.assert(typeM === typeS);
@@ -125,7 +127,6 @@ export function hash(ctx, state) {
 }
 
 export function toJSON(ctx, state) {
-    // maybe sth more here later
     return JSON.stringify(state);
 }
 
