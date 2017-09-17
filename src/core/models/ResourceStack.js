@@ -1,4 +1,5 @@
 import _ from 'lodash';
+import { getTypeDesc } from '../utils/ctx';
 import { hash as _hash } from '../utils/hashable';
 
 
@@ -26,11 +27,6 @@ function validateCtx(ctx, type) {
     console.assert(desc.resourceNames,
         `Context description of type '${JSON.stringify(type)}'
          doesn't seem to have 'resourceNames': ${JSON.stringify(desc)}`);
-}
-
-function getTypeDesc(ctx, state) {
-    const type = state.type;
-    return [type, ctx[type]];
 }
 
 function getResources(ctx, state) {

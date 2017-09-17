@@ -2,10 +2,22 @@ import _ from 'lodash';
 
 import serialization from '../../utils/serialization';
 import resourceStackFactory from '../ResourceStack';
-import SlotState from '../SlotState';
+import Slot from '../Slot';
+import * as bindSlot from '../Slot';
 
 
-const emptyState = new SlotState();
+const ctx = {
+    'Slot': {
+        resourceNames: ['tokens']
+    }
+};
+const Slot = bindSlot(ctx);
+const f = function(state) {
+    state.type = 'Slot';
+    return state;
+};
+
+const emptyState = f({});
 const value = {
     hash: () => 'hash of value',
     toJSON: () => '{"name":"value"}'
@@ -14,72 +26,55 @@ const otherValue = {
     hash: () => 'hash of otherValue',
     toJSON: () => '{"name":"otherValue"}'
 };
-
+const someState = Slot.setValue(emptyState, value);
 const customIsFull = () => true;
-serialization.registerFactory('SlotState', 'isFull', 'customIsFull', customIsFull);
-
-const someState = emptyState.setValue(value);
-const args = { value: value, active: false, isFull: customIsFull };
 
 
-describe('SlotState constructor', () => {
-    test('without args', () => {
-        expect(new SlotState())
-            .toMatchObject({ _value: null, _active: true, args: {} });
-    });
-    test('with args', () => {
-        const args = { value: value, active: false, isFull: customIsFull };
-        expect(new SlotState(args)).toMatchObject(
-            { _value: value, _active: false, args: args }
-        );
-    });
-});
-
-describe('SlotState.setValue', () => {
-    test('returns new SlotState instance when instance has been changed', () => {
+describe('Slot.setValue', () => {
+    test('returns new Slot instance when instance has been changed', () => {
         expect(someState).not.toBe(emptyState);
     });
     test('returns the same instance when instance has not been changed', () => {
-        expect(someState.setValue(value)).toBe(someState);
+        expect(Slot.setValue(someState, value)).toBe(someState);
     });
     test('returns state given value', () => {
         expect(someState.value).toBe(value);
     });
     test('returns state with the same args', () => {
-        const state = new SlotState(args);
+        const state = new Slot(args);
         const newState = state.setValue(otherValue);
         expect(newState.args).toMatchObject(_.omit(args, ['value']));
         expect(newState.args.value).toBe(otherValue);
     });
 });
 
-describe('SlotState.clear', () => {
-    test('returns new SlotState instance when value was cleared', () => {
-        expect(someState.clear()).not.toBe(someState);
+describe('Slot.clear', () => {
+    test('returns new Slot instance when value was cleared', () => {
+        expect(Slot.clear(someState)).not.toBe(someState);
     });
     test('returns the same instance when value was not set', () => {
-        expect(emptyState.clear()).toBe(emptyState);
+        expect(Slot.clear(emptyState)).toBe(emptyState);
     });
     test('returns state with value cleared', () => {
-        expect(someState.clear()).toMatchObject({ _value: null });
+        expect(Slot.clear(someState)).toMatchObject({ value: null });
     });
 });
 
-describe('SlotState.isEmpty', () => {
+describe('Slot.isEmpty', () => {
     test('false with empty value', () => {
         expect(emptyState.isEmpty()).toBeTruthy();
     });
     test('false with value set', () => {
         expect(someState.isEmpty()).toBeFalsy();
     });
-    test('false after clear', () => {
+    test('false after clearValue', () => {
         expect(someState.clear().isEmpty()).toBeTruthy();
     });
 });
 
-describe('SlotState.isEqual', () => {
+describe('Slot.isEqual', () => {
     test('on equal state', () => {
-        const otherState = new SlotState(someState.args);
+        const otherState = new Slot(someState.args);
         expect(someState.isEqual(otherState)).toBeTruthy();
     });
     test('on different state', () => {
@@ -90,7 +85,7 @@ describe('SlotState.isEqual', () => {
     });
 });
 
-describe('SlotState.hasChangedValue', () => {
+describe('Slot.hasChangedValue', () => {
     test('true if value changed from null to some', () => {
         const newState = emptyState.setValue(otherValue);
         expect(newState.hasChangedValue(emptyState)).toBeTruthy();
@@ -112,18 +107,18 @@ describe('SlotState.hasChangedValue', () => {
         expect(newState.hasChangedValue(emptyState)).toBeFalsy();
     });
     test('false if slot was activated', () => {
-        const state = new SlotState({ value: value, active: false });
+        const state = new Slot({ value: value, active: false });
         const newState = state.activate();
         expect(newState.hasChangedValue(state)).toBeFalsy();
     });
 });
 
 
-const inactiveState = new SlotState({ active: false });
-const activeState = new SlotState({ active: true });
+const inactiveState = new Slot({ active: false });
+const activeState = new Slot({ active: true });
 
-describe('SlotState.activate', () => {
-    test('returns new SlotState instance when instance has been changed', () => {
+describe('Slot.activate', () => {
+    test('returns new Slot instance when instance has been changed', () => {
         const newState = inactiveState.activate();
         expect(newState).not.toBe(inactiveState);
         expect(newState.active).toBeTruthy();
@@ -134,14 +129,14 @@ describe('SlotState.activate', () => {
         expect(newState.active).toBeTruthy();
     });
     test('returns state with the same args', () => {
-        const state = new SlotState(args);
+        const state = new Slot(args);
         const newState = state.activate();
         expect(newState.args).toMatchObject(_.omit(args, ['active']));
     });
 });
 
-describe('SlotState.deactivate', () => {
-    test('returns new SlotState instance when instance has been changed', () => {
+describe('Slot.deactivate', () => {
+    test('returns new Slot instance when instance has been changed', () => {
         const newState = activeState.deactivate();
         expect(newState).not.toBe(activeState);
         expect(newState.active).toBeFalsy();
@@ -152,16 +147,16 @@ describe('SlotState.deactivate', () => {
         expect(newState.active).toBeFalsy();
     });
     test('returns state with the same args', () => {
-        const state = new SlotState(args);
+        const state = new Slot(args);
         const newState = state.deactivate();
         expect(newState.args).toMatchObject(_.omit(args, ['active']));
     });
 });
 
-describe('SlotState.hash', () => {
+describe('Slot.hash', () => {
     test('equals for equal stack', () => {
         expect(someState.hash()).toEqual(
-            new SlotState({ value: value }).hash()
+            new Slot({ value: value }).hash()
         );
     });
     test('differs for other stack', () => {
@@ -169,17 +164,17 @@ describe('SlotState.hash', () => {
     });
 });
 
-describe('SlotState serialization', () => {
-    const serializedEmpty = '{"type":"SlotState","args":{}}';
+describe('Slot serialization', () => {
+    const serializedEmpty = '{"type":"Slot","args":{}}';
     const valueStr = 'value';
-    const serializedStr = '{"type":"SlotState","args":{"value":"value"}}';
+    const serializedStr = '{"type":"Slot","args":{"value":"value"}}';
     const valueObj = { name: 'value' };
-    const serializedObj = '{"type":"SlotState","args":{"value":{"name":"value"}}}';
+    const serializedObj = '{"type":"Slot","args":{"value":{"name":"value"}}}';
     const valueEmptyObj = {};
-    const serializedEmptyObj = '{"type":"SlotState","args":{"value":{}}}';
+    const serializedEmptyObj = '{"type":"Slot","args":{"value":{}}}';
     const valueStack = new (resourceStackFactory(['tokens'], 'TokenStack'))({ tokens: 7 });
     const serializedStack = (
-        `{"type":"SlotState","args":{"value":${serialization.serialize(valueStack)}}}`
+        `{"type":"Slot","args":{"value":${serialization.serialize(valueStack)}}}`
     );
 
     test('serialize empty state', () => {
