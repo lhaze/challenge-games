@@ -1,46 +1,47 @@
 import _ from 'lodash';
-import { getTypeDesc } from '../utils/ctx';
 import { hash as _hash } from '../utils/hashable';
 
 
 export function validateState(ctx, state) {
     const type = state.type;
     console.assert(type, `State object doesn't define its type: ${JSON.stringify(state)}`);
-    const desc = ctx[type];
-    console.assert(desc, `Context object doesn't describe the type: ${JSON.stringify(ctx)}`);
-    console.assert('resourceNames' in desc,
-        `Context description of type '${JSON.stringify(type)}'
-         doesn't seem to have 'resourceNames': ${JSON.stringify(desc)}`);
-    console.assert(desc.resourceNames,
-        `Context description of type '${JSON.stringify(type)}'
-         doesn't seem to have 'resourceNames': ${JSON.stringify(desc)}`);
-    console.assert(_.keys(state) in desc.resourceNames,
-        `Context description of type '${JSON.stringify(type)}'
-         doesn't seem to have 'resourceNames': ${JSON.stringify(desc)}`);
+    const meta = ctx[type];
+    console.assert(meta,
+        `Context object doesn't have meta-description of the type: ${JSON.stringify(ctx)}`);
+    console.assert('resourceNames' in meta,
+        `Meta-description of type '${JSON.stringify(type)}'
+         doesn't seem to have 'resourceNames': ${JSON.stringify(meta)}`);
+    console.assert(meta.resourceNames,
+        `Meta-description of type '${JSON.stringify(type)}'
+         doesn't seem to have 'resourceNames': ${JSON.stringify(meta)}`);
+    console.assert(_.keys(state) in meta.resourceNames,
+        `Meta-description of type '${JSON.stringify(type)}'
+         doesn't seem to have 'resourceNames': ${JSON.stringify(meta)}`);
 }
 
 function validateCtx(ctx, type) {
-    const desc = ctx[type];
-    console.assert('resourceNames' in desc,
-        `Context description of type '${JSON.stringify(type)}'
-         doesn't seem to have 'resourceNames': ${JSON.stringify(desc)}`);
-    console.assert(desc.resourceNames,
-        `Context description of type '${JSON.stringify(type)}'
-         doesn't seem to have 'resourceNames': ${JSON.stringify(desc)}`);
+    const meta = ctx[type];
+    console.assert('resourceNames' in meta,
+        `Meta-description of type '${JSON.stringify(type)}'
+         doesn't seem to have 'resourceNames': ${JSON.stringify(meta)}`);
+    console.assert(meta.resourceNames,
+        `Meta-description of type '${JSON.stringify(type)}'
+         doesn't seem to have 'resourceNames': ${JSON.stringify(meta)}`);
 }
 
 function getResources(ctx, state) {
-    const [, desc] = getTypeDesc(ctx, state);
-    return _.map(desc.resourceNames, (name) => (state[name] || 0));
+    const meta = ctx[state.type];
+    return _.map(meta.resourceNames, (name) => (state[name] || 0));
 }
 
 function getResourcesPairwise(ctx, stateL, stateR) {
-    const [typeL, descL] = getTypeDesc(ctx, stateL);
-    const [typeR] = getTypeDesc(ctx, stateR);
+    const typeL = stateL.type;
+    const typeR = stateR.type;
+    const meta = ctx[typeL];
     console.assert(typeL === typeR,
         `Types of ResourceStack doesnt seem to match:
         '${JSON.stringify(stateL)}' and '${JSON.stringify(stateR)}'`);
-    return _.map(descL.resourceNames, (name) => [stateL[name] || 0, stateR[name] || 0]);
+    return _.map(meta.resourceNames, (name) => [stateL[name] || 0, stateR[name] || 0]);
 }
 
 export function isEmpty(ctx, state) {
@@ -85,11 +86,12 @@ export function isContaining(ctx, stateBigger, stateSmaller) {
 export function add(ctx, addendL, addendR) {
     if (isEmpty(ctx, addendL)) return addendR;
     if (isEmpty(ctx, addendR)) return addendL;
-    const [typeL, desc] = getTypeDesc(ctx, addendL);
-    const [typeR] = getTypeDesc(ctx, addendR);
+    const typeL = addendL.type;
+    const typeR = addendR.type;
     console.assert(typeL === typeR);
+    const meta = ctx[typeL];
     return _.reduce(
-        desc.resourceNames,
+        meta.resourceNames,
         (obj, name) => {
             obj[name] = (addendL[name] || 0) + (addendR[name] || 0);
             return obj;
@@ -102,11 +104,12 @@ export function subtract(ctx, minuend, subtrahend) {
     if (isEmpty(ctx, subtrahend)) return minuend;
     // eslint-disable-next-line no-param-reassign
     if (_.isNil(minuend)) minuend = { type: subtrahend.type };
-    const [typeM, desc] = getTypeDesc(ctx, minuend);
-    const [typeS] = getTypeDesc(ctx, subtrahend);
+    const typeM = minuend.type;
+    const typeS = subtrahend.type;
     console.assert(typeM === typeS);
+    const meta = ctx[typeM];
     return _.reduce(
-        desc.resourceNames,
+        meta.resourceNames,
         (obj, name) => {
             obj[name] = (minuend[name] || 0) - (subtrahend[name] || 0);
             return obj;
