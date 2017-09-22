@@ -82,6 +82,14 @@ export function isContaining(ctx, stateBigger, stateSmaller) {
     );
 }
 
+export function count(ctx, state) {
+    const meta = ctx[state.type];
+    return _.reduce(meta.resourceNames, (sum, name) => {
+        // eslint-disable-next-line no-param-reassign
+        sum += state[name];
+        return sum;
+    }, 0);
+}
 
 export function add(ctx, addendL, addendR) {
     if (isEmpty(ctx, addendL)) return addendR;
@@ -135,6 +143,7 @@ export default function bindToContext(ctx) {
         isPositive: _.partial(isPositive, ctx),
         isEqual: _.partial(isEqual, ctx),
         isContaining: _.partial(isContaining, ctx),
+        count: _.partial(count, ctx),
         add: _.partial(add, ctx),
         subtract: _.partial(subtract, ctx),
         hash: _.partial(hash, ctx),

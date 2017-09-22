@@ -1,6 +1,4 @@
-import createResourceStack from '../ResourceStack';
-// import * as ResourceStack from '../ResourceStack';
-import serialization from '../../utils/serialization';
+import bindResourceStack from '../ResourceStack';
 
 const ctx = {
     'ResourceStack.tokens': {
@@ -10,20 +8,16 @@ const ctx = {
         resourceNames: ['red', 'green', 'blue']
     }
 };
-
-const ResourceStack = createResourceStack(ctx);
-
+const ResourceStack = bindResourceStack(ctx);
 const tokensState = {
     type: 'ResourceStack.tokens',
     tokens: 7
 };
-
 const stateCyan = {
     type: 'ResourceStack.colors',
     red: 1,
     green: 2
 };
-
 const stateYellow = {
     type: 'ResourceStack.colors',
     red: 1,
@@ -31,16 +25,6 @@ const stateYellow = {
     blue: 3
 };
 
-
-// describe('ResourceStack constructor', () => {
-//     test('is mapping keys', () => {
-//         expect(stateYellow).toMatchObject({ red: 1, green: 1 });
-//     });
-//     test('when unexpected keys happen', () => {
-//         expect(stateYellow).not.toHaveProperty('white');
-//     });
-// });
-//
 
 describe('ResourceStack.isEmpty', () => {
     test('on null', () => {
