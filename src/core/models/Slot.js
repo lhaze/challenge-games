@@ -45,7 +45,7 @@ export function isFull(ctx, state) {
     return strategy(ctx, state);
 }
 
-const CanSetValuePolicy = {
+const CanPushValuePolicy = {
     existence(ctx, state, value) {
         const full = isActive(ctx, state) && !isFull(ctx, state);
         return { success: full, newValue: value, msg: full ? 'Slot is not empty' : null };
@@ -55,26 +55,26 @@ const CanSetValuePolicy = {
     }
 };
 
-export function canSetValue(ctx, state, value) {
+export function canPushValue(ctx, state, value) {
     const meta = ctx[state.type];
     const strategyName = state.setValueStrategy || meta.setValueStrategy;
     if (_.isNil(strategyName)) return true;
-    const strategy = CanSetValuePolicy[strategyName];
+    const strategy = CanPushValuePolicy[strategyName];
     console.assert(strategy);
     return strategy(ctx, state, value);
 }
 
 export function setValue(ctx, state, value) {
     if (state.value === value) return { success: true, state: state, msg: 'Same value' };
-    const { success, msg, newValue } = canSetValue(ctx, state, value);
+    const { success, msg, newValue } = canPushValue(ctx, state, value);
     if (!success) return { success, state, msg };
     const newState = _.assign(_.clone(state), { value: newValue });
     return { success, msg, state: newState };
 }
 
-export function clearValue(ctx, state) {
+export function popValue(ctx, state) {
     if (state.value === null) return { success: true, state: state, msg: 'Same value' };
-    const { success, msg, newValue } = canSetValue(ctx, state, null);
+    const { success, msg, newValue } = canPushValue(ctx, state, null);
     if (!success) return { success, state, msg };
     const newState = _.assign(_.clone(state), { value: newValue });
     return { success, msg, state: newState };
@@ -127,9 +127,9 @@ export default function bindToContext(ctx) {
         isEmpty: _.partial(isEmpty, ctx),
         isActive: _.partial(isActive, ctx),
         isFull: _.partial(isFull, ctx),
-        canSetValue: _.partial(canSetValue, ctx),
+        canPushValue: _.partial(canPushValue, ctx),
         setValue: _.partial(setValue, ctx),
-        clearValue: _.partial(clearValue, ctx),
+        popValue: _.partial(popValue, ctx),
         // hasChangedValue: _.partial(hasChangedValue, ctx),
         // isEqual: _.partial(isEqual, ctx),
         // canChangeActive: _.partial(canChangeActive, ctx),

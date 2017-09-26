@@ -1,6 +1,7 @@
 import _ from 'lodash';
 import {
     isFull,
+    canPushValue,
 } from '../Slot';
 import bindSlot from '../Slot';
 
@@ -34,7 +35,6 @@ describe('Slot.isEmpty', () => {
         const state = _.assign(_.clone(someState), { value: null });
         expect(Slot.isEmpty(state)).toBeTruthy();
     });
-
     test('on state with value', () => {
         expect(Slot.isEmpty(someState)).toBeFalsy();
     });
@@ -108,19 +108,28 @@ describe('Slot.isFull', () => {
     });
 });
 
-// describe('Slot.setValue', () => {
+// describe('Slot.canPushValue', () => {
+//     test('on empty state', () => {
+//         const value =
+//         const { success, msg, newValue } = Slot.canPushValue(emptyState, value);
+//         expect(success).toBeTruthy();
+//         expect(newValue).toEqual(value);
+//         expect(msg).toBeNull();
+//     });
+// });
+// describe('Slot.pushValue', () => {
 //     test('returns new Slot instance when instance has been changed', () => {
 //         expect(someState).not.toBe(emptyState);
 //     });
 //     test('returns the same instance when instance has not been changed', () => {
-//         expect(Slot.setValue(someState, value)).toBe(someState);
+//         expect(Slot.pushValue(someState, value)).toBe(someState);
 //     });
 //     test('returns state given value', () => {
 //         expect(someState.value).toBe(value);
 //     });
 //     test('returns state with the same args', () => {
 //         const state = new Slot(args);
-//         const newState = state.setValue(otherValue);
+//         const newState = state.pushValue(otherValue);
 //         expect(newState.args).toMatchObject(_.omit(args, ['value']));
 //         expect(newState.args.value).toBe(otherValue);
 //     });
@@ -130,7 +139,7 @@ describe('Slot.isFull', () => {
 //     test('returns new Slot instance when value was cleared', () => {
 //         expect(Slot.clear(someState)).not.toBe(someState);
 //     });
-//     test('returns the same instance when value was not set', () => {
+//     test('returns the same instance when value was not push', () => {
 //         expect(Slot.clear(emptyState)).toBe(emptyState);
 //     });
 //     test('returns state with value cleared', () => {
@@ -142,7 +151,7 @@ describe('Slot.isFull', () => {
 //     test('false with empty value', () => {
 //         expect(emptyState.isEmpty()).toBeTruthy();
 //     });
-//     test('false with value set', () => {
+//     test('false with value push', () => {
 //         expect(someState.isEmpty()).toBeFalsy();
 //     });
 //     test('false after clearValue', () => {
@@ -165,11 +174,11 @@ describe('Slot.isFull', () => {
 //
 // describe('Slot.hasChangedValue', () => {
 //     test('true if value changed from null to some', () => {
-//         const newState = emptyState.setValue(otherValue);
+//         const newState = emptyState.pushValue(otherValue);
 //         expect(newState.hasChangedValue(emptyState)).toBeTruthy();
 //     });
 //     test('false if value changed from null to falsy', () => {
-//         const newState = emptyState.setValue(0);
+//         const newState = emptyState.pushValue(0);
 //         expect(newState.hasChangedValue(emptyState)).toBeTruthy();
 //     });
 //     test('false if slot was deactivated', () => {
@@ -177,11 +186,11 @@ describe('Slot.isFull', () => {
 //         expect(newState.hasChangedValue(someState)).toBeFalsy();
 //     });
 //     test('true if value changed from some to other', () => {
-//         const newState = someState.setValue(otherValue);
+//         const newState = someState.pushValue(otherValue);
 //         expect(newState.hasChangedValue(someState)).toBeTruthy();
 //     });
 //     test('false if value changed from some to the same', () => {
-//         const newState = emptyState.setValue(null);
+//         const newState = emptyState.pushValue(null);
 //         expect(newState.hasChangedValue(emptyState)).toBeFalsy();
 //     });
 //     test('false if slot was activated', () => {
