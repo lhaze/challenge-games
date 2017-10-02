@@ -1,7 +1,25 @@
 import React, { Component } from 'react';
-import { Button, Col, Grid, Row } from 'react-bootstrap';
+import { Badge, Button, ButtonToolbar, Col, Glyphicon, Grid, Row } from 'react-bootstrap';
 import logo from './logo.svg';
 import './ReactShowcase.css';
+
+
+function nameToStyle(name) {
+    return {
+        'red': 'danger',
+        'green': 'success',
+        'blue': 'primary'
+    }[name];
+}
+
+
+function nameToColor(name) {
+    return {
+        'red': '#d9534f',
+        'green': '#5cb85c',
+        'blue': '#337ab7'
+    }[name];
+}
 
 
 export default class ReactShowcase extends Component {
@@ -46,7 +64,48 @@ class ResourceTray extends Component {
         return (
             <Col {... this.props }>
                 <h5>Resource Tray</h5>
+                <Row>
+                    <Col>
+                        <ButtonToolbar>
+                            <ResourceGenerator resourceName="red" />
+                            <ResourceGenerator resourceName="green" />
+                            <ResourceGenerator resourceName="blue" />
+                            <RemoveResource />
+                        </ButtonToolbar>
+                    </Col>
+                </Row>
+                <Row>
+                    <Col>
+                        <Badge>500</Badge>
+                    </Col>
+                </Row>
             </Col>
         );
     }
 }
+
+
+class ResourceGenerator extends Component {
+    render() {
+        return (
+            <Button bsStyle={ nameToStyle(this.props.resourceName) }>+</Button>
+        );
+    }
+}
+
+ResourceGenerator.propTypes = {
+    resourceName: React.PropTypes.string
+};
+
+
+class RemoveResource extends Component {
+    render() {
+        return (
+            <Button><Glyphicon glyph="ban-circle" /></Button>
+        );
+    }
+}
+
+RemoveResource.propTypes = {
+    resourceName: React.PropTypes.string
+};
