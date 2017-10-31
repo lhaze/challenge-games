@@ -138,6 +138,7 @@ export function toJSON(ctx, state) {
 
 export default function bindToContext(ctx) {
     return {
+        name: 'ResourceStack',
         validate: _.partial(validateState, ctx),
         isEmpty: _.partial(isEmpty, ctx),
         isPositive: _.partial(isPositive, ctx),

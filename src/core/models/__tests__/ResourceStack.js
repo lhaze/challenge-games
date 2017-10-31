@@ -141,8 +141,8 @@ describe('ResourceStack.subtract', () => {
             .toMatchObject({ type: 'ResourceStack.colors', blue: -3, green: 1, red: 0 });
     });
     test('on nil', () => {
-        // expect(ResourceStack.subtract(stateCyan, null))
-        //     .toMatchObject(stateCyan);
+        expect(ResourceStack.subtract(stateCyan, null))
+            .toMatchObject(stateCyan);
         expect(ResourceStack.subtract(null, stateCyan))
             .toMatchObject({ type: 'ResourceStack.colors', blue: 0, green: -2, red: -1 });
     });

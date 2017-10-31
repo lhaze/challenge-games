@@ -1,7 +1,9 @@
 import _ from 'lodash';
 import {
+    CanPushValuePolicy,
+    IsFullPolicy,
     isFull,
-    canPushValue,
+    canPushValue
 } from '../Slot';
 import bindSlot from '../Slot';
 
@@ -17,14 +19,16 @@ const addType = function(state) {
     state.type = 'Slot.field';
     return state;
 };
+const someValue = {
+    type: 'ResourceStack.tokens',
+    tokens: 7
+};
+const otherValue = {
+    type: 'ResourceStack.tokens',
+    tokens: 5
+};
 const emptyState = addType({});
-const someState = addType({
-    value: {
-        type: 'ResourceStack.tokens',
-        tokens: 7
-    },
-    active: true
-});
+const someState = addType({ value: someValue });
 
 
 describe('Slot.isEmpty', () => {
@@ -64,16 +68,6 @@ describe('Slot.isFull', () => {
         const state = _.assign(_.clone(someState), { isFullStrategy: 'foo' });
         expect(() => Slot.isFull(state)).toThrow();
     });
-    test('on an state with value and "never" strategy on state', () => {
-        const state = _.assign(_.clone(someState), { isFullStrategy: 'never' });
-        expect(Slot.isFull(state)).toBeFalsy();
-    });
-    test('on an state with value and "never" strategy on ctx', () => {
-        const ctx = {
-            'Slot.field': { isFullStrategy: 'never' }
-        };
-        expect(isFull(ctx, someState)).toBeFalsy();
-    });
     test('on an state with value and "always" strategy on state', () => {
         const state = _.assign(_.clone(someState), { isFullStrategy: 'always' });
         expect(Slot.isFull(state)).toBeTruthy();
@@ -84,39 +78,195 @@ describe('Slot.isFull', () => {
         };
         expect(isFull(ctx, someState)).toBeTruthy();
     });
-    test('on an state with high value and "limit" strategy on state', () => {
-        const state = _.assign(_.clone(someState), { isFullStrategy: 'limit', limit: 7 });
-        expect(Slot.isFull(state)).toBeTruthy();
+});
+
+describe('Slot.IsFullPolicy', () => {
+    test('always on a state with value', () => {
+        expect(IsFullPolicy.always(ctx, someState)).toBeTruthy();
     });
-    test('on an state with low value and "limit" strategy on state', () => {
-        const state = _.assign(_.clone(someState), { isFullStrategy: 'limit', limit: 10 });
-        expect(Slot.isFull(state)).toBeFalsy();
+    test('never on an empty state', () => {
+        expect(IsFullPolicy.never(ctx, emptyState)).toBeFalsy();
     });
-    test('on an state with high value and "limit" strategy on ctx', () => {
+    test('maxValue on state', () => {
+        const state = _.assign(_.clone(someState), { isFullStrategy: 'maxValue', maxValue: 7 });
+        expect(IsFullPolicy.maxValue(ctx, state)).toBeTruthy();
+    });
+    test('maxValue on ctx', () => {
         const ctx = {
-            'Slot.field': { isFullStrategy: 'limit', limit: 7 },
+            'Slot.field': { isFullStrategy: 'maxValue', maxValue: 7 },
             'ResourceStack.tokens': { resourceNames: ['tokens'] }
         };
-        expect(isFull(ctx, someState)).toBeTruthy();
+        expect(IsFullPolicy.maxValue(ctx, someState)).toBeTruthy();
     });
-    test('on an state with high value and "limit" strategy on ctx', () => {
+    test('maxValue with a high limit', () => {
         const ctx = {
-            'Slot.field': { isFullStrategy: 'limit', limit: 10 },
+            'Slot.field': { isFullStrategy: 'maxValue', maxValue: 10 },
             'ResourceStack.tokens': { resourceNames: ['tokens'] }
         };
         expect(isFull(ctx, someState)).toBeFalsy();
     });
+    test('maxValue with a low limit', () => {
+        const ctx = {
+            'Slot.field': { isFullStrategy: 'maxValue', maxValue: 2 },
+            'ResourceStack.tokens': { resourceNames: ['tokens'] }
+        };
+        expect(isFull(ctx, someState)).toBeTruthy();
+    });
 });
 
-// describe('Slot.canPushValue', () => {
-//     test('on empty state', () => {
-//         const value =
-//         const { success, msg, newValue } = Slot.canPushValue(emptyState, value);
-//         expect(success).toBeTruthy();
-//         expect(newValue).toEqual(value);
-//         expect(msg).toBeNull();
-//     });
-// });
+describe('Slot.canPushValue', () => {
+    const stateWithNever = addType({ setValueStrategy: 'never' });
+    const otherCtx = {
+        'Slot.field': { setValueStrategy: 'never' },
+        'ResourceStack.tokens': { resourceNames: ['tokens'] }
+    };
+    test('empty on an empty state', () => {
+        const { success, value, msg } = Slot.canPushValue(emptyState, someValue);
+        expect(success).toBeTruthy();
+        expect(value).toEqual(someValue);
+        expect(msg).toBeNull();
+    });
+    test('empty on a state with value', () => {
+        const { success, value, msg } = Slot.canPushValue(someState, otherValue);
+        expect(success).toBeFalsy();
+        expect(value).toBeNull();
+        expect(msg).toEqual('CAN-PUSH-VALUE/EMPTY');
+    });
+    test('never on a state', () => {
+        const { success, value, msg } = Slot.canPushValue(stateWithNever, someValue);
+        expect(success).toBeFalsy();
+        expect(value).toBeNull();
+        expect(msg).toEqual('CAN-PUSH-VALUE/NEVER');
+    });
+    test('never on a context', () => {
+        const { success, value, msg } = canPushValue(otherCtx, emptyState, someValue);
+        expect(success).toBeFalsy();
+        expect(value).toBeNull();
+        expect(msg).toEqual('CAN-PUSH-VALUE/NEVER');
+    });
+});
+
+describe('Slot.CanPushValuePolicy', () => {
+    test('never on an empty state', () => {
+        const { success, value, msg } = CanPushValuePolicy.never(ctx, emptyState, otherValue);
+        expect(success).toBeFalsy();
+        expect(value).toBeNull();
+        expect(msg).toEqual('CAN-PUSH-VALUE/NEVER');
+    });
+    test('always on a state with value', () => {
+        const { success, value, msg } = CanPushValuePolicy.always(ctx, someState, otherValue);
+        expect(success).toBeTruthy();
+        expect(value).toEqual(otherValue);
+        expect(msg).toBeNull();
+    });
+    // CanPushValuePolicy.empty
+    test('empty on an empty state', () => {
+        const { success, value, msg } = CanPushValuePolicy.empty(ctx, emptyState, otherValue);
+        expect(success).toBeTruthy();
+        expect(value).toEqual(otherValue);
+        expect(msg).toBeNull();
+    });
+    test('empty on a state with value', () => {
+        const { success, value, msg } = CanPushValuePolicy.empty(ctx, someState, otherValue);
+        expect(success).toBeFalsy();
+        expect(value).toBeNull();
+        expect(msg).toEqual('CAN-PUSH-VALUE/EMPTY');
+    });
+    test('empty on an empty value', () => {
+        const { success, value, msg } = CanPushValuePolicy.empty(ctx, someState, null);
+        expect(success).toBeTruthy();
+        expect(value).toBeNull();
+        expect(msg).toBeNull();
+    });
+    // CanPushValuePolicy.notEmpty
+    test('notEmpty on a state with value', () => {
+        const { success, value, msg } = CanPushValuePolicy.notEmpty(ctx, someState, otherValue);
+        expect(success).toBeTruthy();
+        expect(value).toEqual(otherValue);
+        expect(msg).toBeNull();
+    });
+    test('notEmpty on an empty state', () => {
+        const { success, value, msg } = CanPushValuePolicy.notEmpty(ctx, emptyState, otherValue);
+        expect(success).toBeTruthy();
+        expect(value).toEqual(otherValue);
+        expect(msg).toBeNull();
+    });
+    test('notEmpty on an empty value', () => {
+        const { success, value, msg } = CanPushValuePolicy.notEmpty(ctx, emptyState, null);
+        expect(success).toBeFalsy();
+        expect(value).toBeNull();
+        expect(msg).toEqual('CAN-PUSH-VALUE/NOT-EMPTY');
+    });
+    test('notEmpty on an empty value', () => {
+        const { success, value, msg } = CanPushValuePolicy.notEmpty(ctx, emptyState, otherValue);
+        expect(success).toBeTruthy();
+        expect(value).toEqual(otherValue);
+        expect(msg).toBeNull();
+    });
+    // CanPushValuePolicy.type
+    const typedState = addType({
+        value: someValue,
+        acceptedTypes: ['ResourceStack.tokens', 'foo']
+    });
+    test('type on an empty value', () => {
+        const { success, value, msg } = CanPushValuePolicy.type(ctx, typedState, null);
+        expect(success).toBeTruthy();
+        expect(value).toBeNull();
+        expect(msg).toBeNull();
+    });
+    test('type on an value of type', () => {
+        const { success, value, msg } = CanPushValuePolicy.type(ctx, typedState, otherValue);
+        expect(success).toBeTruthy();
+        expect(value).toEqual(otherValue);
+        expect(msg).toBeNull();
+    });
+    test('type on an value of other type', () => {
+        const otherTypeValue = {
+            type: 'bar',
+            tokens: 7
+        };
+        const { success, value, msg } = CanPushValuePolicy.type(ctx, typedState, otherTypeValue);
+        expect(success).toBeFalsy();
+        expect(value).toBeNull();
+        expect(msg).toEqual('CAN-PUSH-VALUE/TYPE');
+    });
+    test('type with acceptedTypes not defined', () => {
+        const { success, value, msg } = CanPushValuePolicy.type(ctx, someState, someValue);
+        expect(success).toBeFalsy();
+        expect(value).toBeNull();
+        expect(msg).toEqual('CAN-PUSH-VALUE/TYPE');
+    });
+    test('type with acceptedTypes on context', () => {
+        const ctx = {
+            'Slot.field': {
+                acceptedTypes: ['ResourceStack.tokens', 'foo']
+            },
+            'ResourceStack.tokens': {
+                resourceNames: ['tokens']
+            }
+        };
+        const { success, value, msg } = CanPushValuePolicy.type(ctx, someState, otherValue);
+        expect(success).toBeTruthy();
+        expect(value).toEqual(otherValue);
+        expect(msg).toBeNull();
+    });
+});
+
+describe('Slot.pushValue', () => {
+    test('on an empty state', () => {
+        const { success, state, msg } = Slot.pushValue(emptyState, someValue);
+        expect(success).toBeTruthy();
+        expect(state).toEqual(someState);
+        expect(msg).toBeNull();
+    });
+    test('on a state with the same value', () => {
+        const { success, state, msg } = Slot.pushValue(someState, someValue);
+        expect(success).toBeFalsy();
+        expect(state).toEqual(someState);
+        expect(msg).toEqual('VLD/SAME-VALUE');
+    });
+});
+
 // describe('Slot.pushValue', () => {
 //     test('returns new Slot instance when instance has been changed', () => {
 //         expect(someState).not.toBe(emptyState);
