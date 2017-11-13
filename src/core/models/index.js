@@ -1,6 +1,5 @@
-import _ from 'lodash';
 import ResourceStack from './ResourceStack';
-import Slot from './Slot';
+import * as Slot from './Slot';
 
 
 function getModelName(type) { return type.split('.')[0]; }
@@ -10,7 +9,7 @@ export function getModel(ctx, type) {
     const modelName = getModelName(type);
     const model = {
         'ResourceStack': ResourceStack(ctx),
-        'Slot': Slot(ctx)
+        'Slot': Slot
     }[modelName];
     console.assert(model, `No model found: ${modelName}`);
     return model;
