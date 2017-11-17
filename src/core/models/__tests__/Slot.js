@@ -22,6 +22,8 @@ const otherValue = {
 };
 const emptyState = addType({});
 const someState = addType({ value: someValue });
+const activeState = addType({ active: true });
+const inactiveState = addType({ active: false });
 
 
 describe('Slot.isEmpty', () => {
@@ -42,11 +44,10 @@ describe('Slot.isActive', () => {
         expect(Slot.isActive(ctx, emptyState)).toBeTruthy();
     });
     test('on an active state', () => {
-        expect(Slot.isActive(ctx, someState)).toBeTruthy();
+        expect(Slot.isActive(ctx, activeState)).toBeTruthy();
     });
     test('on an inactive state', () => {
-        const state = _.assign(_.clone(someState), { active: false });
-        expect(Slot.isActive(ctx, state)).toBeFalsy();
+        expect(Slot.isActive(ctx, inactiveState)).toBeFalsy();
     });
 });
 
@@ -136,6 +137,12 @@ describe('Slot.canPushValue', () => {
         expect(success).toBeFalsy();
         expect(value).toBeNull();
         expect(msg).toEqual('VLD/NEVER');
+    });
+    test('on an inactive state', () => {
+        const { success, state, msg } = Slot.canPushValue(ctx, inactiveState, someValue);
+        expect(success).toBeFalsy();
+        expect(state).toEqual(inactiveState);
+        expect(msg).toEqual('VLD/NOT-ACTIVE');
     });
 });
 
@@ -327,6 +334,12 @@ describe('Slot.pushValue', () => {
         expect(state).toEqual(someState);
         expect(msg).toEqual('VLD/SAME-VALUE');
     });
+    test('on an inactive state', () => {
+        const { success, state, msg } = Slot.pushValue(ctx, inactiveState, someValue);
+        expect(success).toBeFalsy();
+        expect(state).toEqual(inactiveState);
+        expect(msg).toEqual('VLD/NOT-ACTIVE');
+    });
     test('on a state with value with empty strategy', () => {
         const { success, state, msg } = Slot.pushValue(ctx, someState, otherValue);
         expect(success).toBeFalsy();
@@ -365,16 +378,23 @@ describe('Slot.popValue', () => {
         expect(state).not.toBe(someState);
         expect(msg).toBeNull();
     });
-    test('returns the same instance when value was not push', () => {
-        const { success, state, msg } = Slot.popValue(ctx, emptyState);
-        expect(success).toBeFalsy();
-        expect(state).toEqual(emptyState);
-        expect(msg).toEqual('VLD/SAME-VALUE');
-    });
     test('returns state with value cleared', () => {
         const { state, rest } = Slot.popValue(ctx, someState);
         expect(state.value).toBeNull();
         expect(rest).toBe(someState.value);
+    });
+    test('on an empty state', () => {
+        const { success, state, msg } = Slot.popValue(ctx, emptyState);
+        expect(success).toBeFalsy();
+        expect(state).toEqual(emptyState);
+        expect(msg).toEqual('VLD/NO-VALUE-TO-POP');
+    });
+    test('on an inactive state', () => {
+        const inactiveState = addType({ value: someState, active: false });
+        const { success, state, msg } = Slot.popValue(ctx, inactiveState);
+        expect(success).toBeFalsy();
+        expect(state).toEqual(inactiveState);
+        expect(msg).toEqual('VLD/NOT-ACTIVE');
     });
 });
 
@@ -392,23 +412,18 @@ describe('Slot.isEmpty', () => {
 });
 
 describe('Slot.isActive', () => {
-    const state = addType({ active: true });
     test('on an active state', () => {
-        expect(Slot.isActive(ctx, state)).toBeTruthy();
+        expect(Slot.isActive(ctx, activeState)).toBeTruthy();
     });
     test('on an inactive state', () => {
-        const state = addType({ active: false });
-        expect(Slot.isActive(ctx, state)).toBeFalsy();
+        expect(Slot.isActive(ctx, inactiveState)).toBeFalsy();
     });
-    test('on an state without an "active" value', () => {
+    test('on an empty state', () => {
         expect(Slot.isActive(ctx, emptyState)).toBeTruthy();
     });
 });
 
 describe('Slot.setActive', () => {
-    const activeState = addType({ active: true });
-    const inactiveState = addType({ active: false });
-
     test('set true on an active state', () => {
         const { success, state, msg } = Slot.setActive(ctx, activeState, true);
         expect(success).toBeFalsy();

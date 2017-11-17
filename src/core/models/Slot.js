@@ -37,6 +37,8 @@ function getAttibute(ctx, state, name) {
 
 export function isEmpty(ctx, state) { return _.isNil(state.value); }
 
+export function isActive(ctx, state) { return _.isNil(state.active) ? true : state.active;}
+
 export const IsFullPolicy = {
     never(ctx, state) { return false; },
     always(ctx, state) { return true; },
@@ -108,6 +110,7 @@ export const CanPushValuePolicy = {
 };
 
 export function canPushValue(ctx, state, value) {
+    if (!isActive(ctx, state)) return { success: false, state: state, msg: 'VLD/NOT-ACTIVE' };
     const meta = ctx[state.type];
     const strategyName = state.setValueStrategy || meta.setValueStrategy || 'empty';
     const strategy = CanPushValuePolicy[strategyName];
@@ -127,15 +130,13 @@ export function pushValue(ctx, state, value) {
 
 export function popValue(ctx, state) {
     if (_.isNil(state.value)) {
-        return { success: false, state: state, rest: null, msg: 'VLD/SAME-VALUE' };
+        return { success: false, state: state, rest: null, msg: 'VLD/NO-VALUE-TO-POP' };
     }
     const { success, msg, value: newValue } = canPushValue(ctx, state, null);
     if (!success) return { success, state, rest: null, msg };
     const newState = _.assign(_.clone(state), { value: newValue });
     return { success, state: newState, rest: state.value, msg };
 }
-
-export function isActive(ctx, state) { return _.isNil(state.active) ? true : state.active;}
 
 export function setActive(ctx, state, active) {
     if ((_.isNil(state.active) ? true : state.active) === active) {
