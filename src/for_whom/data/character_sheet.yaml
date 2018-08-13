@@ -1,0 +1,138 @@
+attributes:
+  - &STR
+    name: strength
+    abbr: STR
+    icon: imgs/strength.png
+    type: *physical_trait
+    description: >
+      Physical ability to change the world around. This is used for brawny
+      things as well as jumps, leaps, and stuff that needs physical power.
+      This is used for base in physical attacks.
+      (This does not involve you affecting the Skinlands).
+
+  - &DEX
+    name: dexterity
+    abbr: DEX
+    icon: imgs/dexterity.png
+    type: physical
+    description: >
+      Fine and large motor skills. Speed, manipulating small items, and so
+      forth. It’s base for whether you hit or not in combat, and for ranged.
+
+  - &STA
+    name: stamina
+    abbr: STA
+    icon: imgs/stamina.png
+    type: physical
+    description: >
+      This is how well your Corpus stays together under assault. It’s base
+      for how many dice you get to soak damage. Also, 5 dots is great: You
+      survived being given enough poison to kill an elephant, being shot
+      three times, getting stabbed over 10 times, beaten by at least five
+      people, tied up, placed in a sack, and dumped in a freezing river.
+
+  - &CHA
+    name: charisma
+    abbr: CHA
+    icon: imgs/charisma.png
+    type: social
+    description: >
+      Your presence to other wraiths. It’s how well you attract others who
+      want to willingly spend time with you.
+
+  - &MAN
+    name: manipulation
+    abbr: MAN
+    icon: imgs/manipulation.png
+    type: social
+    description: >
+      How well you can bring people over without them noticing. This can bite
+      you in the ass since people are generally more opposed to being
+      manipulated than charmed.
+
+  - &APP
+    name: appearance
+    abbr: APP
+    icon: imgs/appearance.png
+    type: social
+    description: >
+      What it says on the tin, though it also affects how well you leave
+      an impression on others. My favourite one of these is 4 dots: One
+      of the “25 Most Beautiful Wraiths of the Year.” Probably cause I like
+      the idea of a ‘People’ magazine for wraiths.
+
+  - &PER
+    name: perception
+    abbr: PER
+    icon: imgs/perception.png
+    type: mental
+    description: Is how well you notice the world and the details around you.
+
+  - &INT
+    name: intelligence
+    abbr: INT
+    icon: imgs/intelligence.png
+    type: mental
+    description: >
+      Sum of your knowledge and how well you can reach new ideas. It’s how
+      well you think instead of how fast. If you have one dot you apparently
+      have trouble counting to 10.
+
+  - &WIT
+    name: wits
+    abbr: WIT
+    icon: imgs/wits.png
+    type: mental
+    description: >
+      Your ability to react to information. It’s how fast you process things
+      and thinking on your feet.
+
+abilities:
+  talents:
+  skills:
+  knowledges:
+    -
+      name: bureacracy
+      description: >
+        You can work the system to get what you need and get stuff done.
+    -
+      name: computer
+      description: >
+        How good you are with computers. This is showing it’s age a little
+        with “In a world where the operation of basic word processing
+        software is still a mystery to many adults....”
+        Wraiths can use this to actually enter electronics and manipulate
+        the info in them.
+    -
+      name: enigmas
+      description: Puzzles and mysteries! How well you solve those things too.
+    -
+      name: investigation
+      description: Criminology and forensic analysis.
+    -
+      name: law
+      description: The legal system and how it works.
+    -
+      name: linguistics
+      description: >
+        This is how many languages you know besides your base, and can also
+        be used in identifying accents, picking up slang, and mimicry.
+    -
+      name: medicine
+      description: >
+        Repairing the human body, and how to hurt it too. If your Fetter is
+        living this can pretty useful, since you can generally use it with
+        Deathsight to see what might endanger them.
+    -
+      name: occult
+      description: >
+        How much you know about the supernatural in WoD. 4 dots is like you
+        get to read all the books.
+    -
+      name: politics
+      description: Figuring out who’s on top and how they got there.
+    -
+      name: science
+      description: >
+        Theoretical and practical knowledge. High levels usually require
+        specializtion.
