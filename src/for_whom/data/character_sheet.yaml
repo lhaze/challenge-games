@@ -1,7 +1,8 @@
+---
 attributes:
   - &STR
     name: strength
-    abbr: STR
+    code: STR
     icon: imgs/strength.png
     type: *physical_trait
     description: >
@@ -12,7 +13,7 @@ attributes:
 
   - &DEX
     name: dexterity
-    abbr: DEX
+    code: DEX
     icon: imgs/dexterity.png
     type: physical
     description: >
@@ -21,7 +22,7 @@ attributes:
 
   - &STA
     name: stamina
-    abbr: STA
+    code: STA
     icon: imgs/stamina.png
     type: physical
     description: >
@@ -33,7 +34,7 @@ attributes:
 
   - &CHA
     name: charisma
-    abbr: CHA
+    code: CHA
     icon: imgs/charisma.png
     type: social
     description: >
@@ -42,7 +43,7 @@ attributes:
 
   - &MAN
     name: manipulation
-    abbr: MAN
+    code: MAN
     icon: imgs/manipulation.png
     type: social
     description: >
@@ -52,7 +53,7 @@ attributes:
 
   - &APP
     name: appearance
-    abbr: APP
+    code: APP
     icon: imgs/appearance.png
     type: social
     description: >
@@ -63,14 +64,14 @@ attributes:
 
   - &PER
     name: perception
-    abbr: PER
+    code: PER
     icon: imgs/perception.png
     type: mental
     description: Is how well you notice the world and the details around you.
 
   - &INT
     name: intelligence
-    abbr: INT
+    code: INT
     icon: imgs/intelligence.png
     type: mental
     description: >
@@ -80,7 +81,7 @@ attributes:
 
   - &WIT
     name: wits
-    abbr: WIT
+    code: WIT
     icon: imgs/wits.png
     type: mental
     description: >
