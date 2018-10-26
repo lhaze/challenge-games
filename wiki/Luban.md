@@ -1,9 +1,11 @@
-![](http://jelenia_gora.fotopolska.eu/foto/123/123287.jpg)
+![The marketplace with the town hall](http://jelenia_gora.fotopolska.eu/foto/123/123287.jpg)
 
-* Name: (de) Lauben / (pl) Lubań
-* Region: Niederschlesien / Oberlausitz
-* Sites: (de) Steinberg / (pl) Kamienna Góra
-* Localization: [Google Maps](https://www.google.pl/maps/place/Park+na+Kamiennej+G%C3%B3rze/@51.1133586,15.2611371,12.92z/data=!4m2!3m1!1s0x0:0x8a75376e65d6f076) 
+* Name: _Lubań / Lauban_
+* Region: _Śląskie Łużyce Górne / schlesische Oberlausitz / silesian Upper Lusatia_
+* Sites:
+  * _Kamienna Góra / Steinberg_
+  * _Domek Górski / Berghaus_
+* Localization: [Google Maps](https://www.google.pl/maps/place/Luba%C5%84/@51.1109879,15.2638188,8921m/data=!3m1!1e3!4m5!3m4!1s0x4708d3ed9f5943dd:0x6373f366e657b6ad!8m2!3d51.1179142!4d15.2893895)
 * Possibilities:
   * complex of factories (GEMA Werke),
   * large rail yard & vehicle workshops,
@@ -12,12 +14,13 @@
   * factory bunkers,
   * destroyed Powder House,
   * affiliate of National Archives,
-  * 9 subcamps of Gross-Rosen concentration camp (Hartmannsdorf / Leśna-Miłoszów)
+  * 9 subcamps of Gross-Rosen concentration camp (_Leśna-Miłoszów / Hartmannsdorf_)
   * camps of RAD-Gruppe (Reichsarbeitsdienst) 104 Niesky, Coys 2., 6.
-  * camp of Hilterjugend in the (de) Berghaus / (pl) Zameczek
+  * camp of Hilterjugend in the Berghaus
 * Items: technical plan of undergrounds (tracing paper)
 * Objects: underground factory, armaments, experimental radar equipment
-* People: Tomasz Bernacki
+* People:
+  * Tomasz Bernacki
 
 References:
 * [IOH "Sensacje" z Lubania](http://forum.ioh.pl/viewtopic.php?t=21580)
